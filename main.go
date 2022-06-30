@@ -6,7 +6,7 @@ import (
 	//"sigs.k8s.io/yaml"
 	"gopkg.in/yaml.v3"
 	"os"
-	//	"io"
+	"io"
 )
 
 func main() {
@@ -19,35 +19,44 @@ func main() {
 	}
 	filename := args[1]
 	//fmt.Printf("opening %s\n", args[1]);
-	
-	bytes,err  := os.ReadFile(filename)
+
+	reader, err := os.Open(filename)
+
 
 	if nil != err {
-		fmt.Fprintf(os.Stderr, "%v: Failed to read input file %s: %v\n", progname, filename, err.Error());
+		fmt.Fprintf(os.Stderr, "%v: Failed to open input file %s: %v\n", progname, filename, err.Error());
 		os.Exit(2)
 	}
+
+	decoder := yaml.NewDecoder(reader)
 	//var m map[string]interface{}
 	var m interface{}
-	err = yaml.Unmarshal(bytes, &m)
-	//yaml.
 
-	if nil != err {
-		fmt.Fprintf(os.Stderr, "%v: Failed to parse yaml file %s: %v\n", progname, filename, err.Error());
+	
+	for err == nil {
+		err = decoder.Decode(&m)
+		if nil == err {
+			outBytes, err := yaml.Marshal(m)
+			if nil != err {
+				fmt.Fprintf(os.Stderr, "%v: Failed to convert to yaml: %v\n", progname, err.Error());
+				os.Exit(5)
+			}
+
+			_, err = os.Stdout.Write(outBytes)
+			if nil != err {
+				fmt.Fprintf(os.Stderr, "%v: Failed to write output: %v\n", progname, err.Error());
+				os.Exit(5)
+			}
+
+			
+		}
+	}
+	
+	if err != io.EOF {
+		fmt.Fprintf(os.Stderr, "%v: Failed to read yaml file %s: %v\n", progname, filename, err.Error());
 		os.Exit(3)
 	}
+	//err = yaml.Unmarshal(bytes, &m)
+	//yaml.
 
-
-	outBytes, err := yaml.Marshal(m)
-	if nil != err {
-		fmt.Fprintf(os.Stderr, "%v: Failed to convert to yaml: %v\n", progname, err.Error());
-		os.Exit(5)
-	}
-
-	_, err = os.Stdout.Write(outBytes)
-	if nil != err {
-		fmt.Fprintf(os.Stderr, "%v: Failed to write output: %v\n", progname, err.Error());
-		os.Exit(5)
-	}
-	
-	
 }
