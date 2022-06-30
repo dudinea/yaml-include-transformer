@@ -1,0 +1,5 @@
+kustomize-field-include
+*~
+\#*\#
+go.sum
+
