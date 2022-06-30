@@ -9,6 +9,17 @@ import (
 	"io"
 )
 
+
+func writeBytes(bytes *[]byte) {
+	_, err := os.Stdout.Write(*bytes)
+	if nil != err {
+		fmt.Fprintf(os.Stderr, "%v: Failed to write output: %v\n", os.Args[0], err.Error());
+		os.Exit(5)
+	}
+}
+
+var header = []byte("---\n");
+
 func main() {
 
 	args := os.Args
@@ -41,14 +52,8 @@ func main() {
 				fmt.Fprintf(os.Stderr, "%v: Failed to convert to yaml: %v\n", progname, err.Error());
 				os.Exit(5)
 			}
-
-			_, err = os.Stdout.Write(outBytes)
-			if nil != err {
-				fmt.Fprintf(os.Stderr, "%v: Failed to write output: %v\n", progname, err.Error());
-				os.Exit(5)
-			}
-
-			
+			writeBytes(&header);
+			writeBytes(&outBytes);
 		}
 	}
 	
@@ -56,7 +61,5 @@ func main() {
 		fmt.Fprintf(os.Stderr, "%v: Failed to read yaml file %s: %v\n", progname, filename, err.Error());
 		os.Exit(3)
 	}
-	//err = yaml.Unmarshal(bytes, &m)
-	//yaml.
-
+	
 }
