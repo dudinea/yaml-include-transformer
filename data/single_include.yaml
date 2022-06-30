@@ -1,0 +1,4 @@
+---
+foo:
+  "bar!textfile": data/test.txt
+  

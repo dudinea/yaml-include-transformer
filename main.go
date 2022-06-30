@@ -7,7 +7,8 @@ import (
 	"gopkg.in/yaml.v3"
 	"os"
 	"io"
-	//	"reflect"
+	"strings"
+	"reflect"
 )
 
 
@@ -21,15 +22,62 @@ func writeBytes(bytes *[]byte) {
 
 var header = []byte("---\n");
 
+const TEXTFILE = "!textfile"
+
+func isInclude(k string) string {
+	fmt.Fprintf(os.Stderr, "%v: isInclude: %v\n", os.Args[0],  k);
+	if strings.HasSuffix(k, TEXTFILE) {
+		return TEXTFILE;
+	}
+	return "";
+}
 
 
+func includeTextfile(v interface{}) (interface{}, error) {
+	switch v.(type) {
+	case string:
+		return "<FILE>", nil
+	default:
+		return nil, fmt.Errorf("Invalid value for include specification: %v", reflect.TypeOf(v));
+	}
+	
+}
 
+
+func include(incl_type string, k string, v interface{}) (interface{}, error) {
+	switch incl_type {
+	case TEXTFILE:
+		return includeTextfile(v);
+	default:
+		return v, fmt.Errorf("Internal error: invalid include type %s", incl_type);
+	}
+	
+}
+
+func processMap(m map[string]interface{}) error {
+	for k, v := range m {
+		fmt.Fprintf(os.Stderr, "%v: process map: %v: %v\n", os.Args[0],  k, v);
+		incl_type := isInclude(k)
+		if incl_type != "" {
+			fmt.Fprintf(os.Stderr, "%v: include: %v: %v\n", os.Args[0],  k, v);
+			newval, err := include(incl_type, k, v)
+			if err != nil {
+				return err;
+			}
+			m[k]=newval;
+		} else {
+			processAny(v)
+		}
+	}
+	return nil
+}
 
 
 func processAny(data interface{}) error {
 	switch  data.(type) {
 	case map[string]interface{}:
 		fmt.Fprintf(os.Stderr, "switch: data is MAP\n");
+		return processMap(data.(map[string]interface{}))
 	case []interface{}:
 		fmt.Fprintf(os.Stderr, "switch: data is ARRAY\n");
 		
