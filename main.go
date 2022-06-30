@@ -3,7 +3,8 @@ package main
 import (
 	"fmt"
 	//	"flag"
-	"sigs.k8s.io/yaml"
+	//"sigs.k8s.io/yaml"
+	"gopkg.in/yaml.v3"
 	"os"
 	//	"io"
 )
@@ -28,6 +29,7 @@ func main() {
 	//var m map[string]interface{}
 	var m interface{}
 	err = yaml.Unmarshal(bytes, &m)
+	//yaml.
 
 	if nil != err {
 		fmt.Fprintf(os.Stderr, "%v: Failed to parse yaml file %s: %v\n", progname, filename, err.Error());
