@@ -7,6 +7,7 @@ import (
 	"gopkg.in/yaml.v3"
 	"os"
 	"io"
+	//	"reflect"
 )
 
 
@@ -20,8 +21,25 @@ func writeBytes(bytes *[]byte) {
 
 var header = []byte("---\n");
 
-func main() {
 
+
+
+
+
+func processAny(data interface{}) error {
+	switch  data.(type) {
+	case map[string]interface{}:
+		fmt.Fprintf(os.Stderr, "switch: data is MAP\n");
+	case []interface{}:
+		fmt.Fprintf(os.Stderr, "switch: data is ARRAY\n");
+		
+	}
+	return nil
+}
+
+
+
+func main() {
 	args := os.Args
 	progname := args[0]
 	if len(args) < 1 {
@@ -29,24 +47,24 @@ func main() {
 		os.Exit(1);
 	}
 	filename := args[1]
-	//fmt.Printf("opening %s\n", args[1]);
-
 	reader, err := os.Open(filename)
-
 
 	if nil != err {
 		fmt.Fprintf(os.Stderr, "%v: Failed to open input file %s: %v\n", progname, filename, err.Error());
 		os.Exit(2)
 	}
 
-	decoder := yaml.NewDecoder(reader)
-	//var m map[string]interface{}
+	decoder :=  yaml.NewDecoder(reader)
 	var m interface{}
-
 	
 	for err == nil {
 		err = decoder.Decode(&m)
 		if nil == err {
+			err = processAny(m)
+			if nil != err {
+				fmt.Fprintf(os.Stderr, "%v: Failed to process yaml: %v\n", progname, err.Error());
+				os.Exit(5)
+			}			
 			outBytes, err := yaml.Marshal(m)
 			if nil != err {
 				fmt.Fprintf(os.Stderr, "%v: Failed to convert to yaml: %v\n", progname, err.Error());
