@@ -33,10 +33,20 @@ func isInclude(k string) string {
 }
 
 
+// FIXME: disallow absolute paths and other tricks 
+func readTextFile(path string) (string, error) {
+	bytes, err := os.ReadFile(path)
+	if nil != err {
+		return "", err	
+	}
+	return string(bytes), nil
+}
+
+
 func includeTextfile(v interface{}) (interface{}, error) {
 	switch v.(type) {
 	case string:
-		return "<FILE>", nil
+		return readTextFile(v.(string))
 	default:
 		return nil, fmt.Errorf("Invalid value for include specification: %v", reflect.TypeOf(v));
 	}
