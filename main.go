@@ -79,12 +79,23 @@ func processMap(m map[string]interface{}) error {
 	return nil
 }
 
+func processArray(a []interface{}) error {
+	for _, k := range a {
+		err := processAny(k)
+		if nil != err {
+			return err
+		}
+	}
+	return nil
+}
+
 func processAny(data interface{}) error {
 	switch data.(type) {
 	case map[string]interface{}:
 		//fmt.Fprintf(os.Stderr, "switch: data is MAP\n")
 		return processMap(data.(map[string]interface{}))
 	case []interface{}:
+		return processArray(data.([]interface{}))
 		//fmt.Fprintf(os.Stderr, "switch: data is ARRAY\n")
 
 	}
@@ -99,12 +110,16 @@ func main() {
 		os.Exit(1)
 	}
 	filename := args[1]
-	reader, err := os.Open(filename)
 
-	if nil != err {
-		fmt.Fprintf(os.Stderr, "%v: Failed to open input file %s: %v\n", progname, filename, err.Error())
-		os.Exit(2)
-	}
+	//reader, err := os.Open(filename)
+	reader := os.Stdin
+
+	// if nil != err {
+	// 	fmt.Fprintf(os.Stderr, "%v: Failed to open input file %s: %v\n", progname, filename, err.Error())
+	// 	os.Exit(2)
+	// }
+	var err error
+	err = nil
 
 	decoder := yaml.NewDecoder(reader)
 	var m interface{}
