@@ -1,0 +1,9 @@
+---
+foo:
+  file1!textfile: data/test1.txt
+  file2!textfile: data/test2.txt
+---
+file1!textfile: data/test1.txt
+file2!textfile: data/test2.txt
+
+  
