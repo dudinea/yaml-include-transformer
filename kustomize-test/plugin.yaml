@@ -1,0 +1,11 @@
+apiVersion: someteam.example.com/v1
+kind: IncludeTransformer
+metadata:
+  name: notImportantHere
+  annotations:
+    config.kubernetes.io/function: |
+      container:
+        image: example.docker.com/my-functions/chart-inflator:0.1.6
+# currently ignored        
+spec:
+  foo: bar
