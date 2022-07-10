@@ -4,6 +4,7 @@ import (
 	"fmt"
 	//	"flag"
 	//"sigs.k8s.io/yaml"
+	b64 "encoding/base64"
 	"io"
 	"os"
 	"reflect"
@@ -22,29 +23,34 @@ func writeBytes(bytes *[]byte) {
 
 var header = []byte("---\n")
 
+// Include types
 const TEXTFILE = "!textfile"
+const BASE64FILE = "!base64file"
 
+// return include type and original key
 func isInclude(k string) (include_type string, new_key string) {
 	//fmt.Fprintf(os.Stderr, "%v: isInclude: %v\n", os.Args[0], k)
 	if strings.HasSuffix(k, TEXTFILE) {
 		return TEXTFILE, k[0 : len(k)-len(TEXTFILE)]
+	} else if strings.HasSuffix(k, BASE64FILE) {
+		return BASE64FILE, k[0 : len(k)-len(BASE64FILE)]
 	}
 	return "", k
 }
 
-// FIXME: disallow absolute paths and other tricks
-func readTextFile(path string) (string, error) {
+// FIXME: security: disallow absolute paths and other tricks
+func readFile(path string) ([]byte, error) {
 	bytes, err := os.ReadFile(path)
 	if nil != err {
-		return "", err
+		return nil, err
 	}
-	return string(bytes), nil
+	return bytes, nil
 }
 
-func includeTextfile(v interface{}) (interface{}, error) {
+func includeTextfile(v interface{}) ([]byte, error) {
 	switch v.(type) {
 	case string:
-		return readTextFile(v.(string))
+		return readFile(v.(string))
 	default:
 		return nil, fmt.Errorf("Invalid value for include specification: %v", reflect.TypeOf(v))
 	}
@@ -54,6 +60,12 @@ func include(incl_type string, k string, v interface{}) (interface{}, error) {
 	switch incl_type {
 	case TEXTFILE:
 		return includeTextfile(v)
+	case BASE64FILE:
+		data, err := includeTextfile(v)
+		if nil != err {
+			return "", err
+		}
+		return make([]byte, b64.StdEncoding.EncodedLen(len(data))), nil
 	default:
 		return v, fmt.Errorf("Internal error: invalid include type %s", incl_type)
 	}
@@ -105,12 +117,12 @@ func processAny(data interface{}) error {
 func main() {
 	args := os.Args
 	progname := args[0]
-	if len(args) < 1 {
-		fmt.Fprintf(os.Stderr, "%v: Input file not provided!\nUsage: \n\t%v input_file\n", progname, progname)
+	/*if len(args) < 2 {
+		fmt.Fprintf(os.Stderr, "%v: config file not provided!\nUsage: \n\t%v input_file\n", progname, progname)
 		os.Exit(1)
 	}
 	filename := args[1]
-
+	*/
 	//reader, err := os.Open(filename)
 	reader := os.Stdin
 
@@ -129,7 +141,7 @@ func main() {
 		if nil == err {
 			err = processAny(m)
 			if nil != err {
-				fmt.Fprintf(os.Stderr, "%v: Failed to process yaml: %v\n", progname, err.Error())
+				//fmt.Fprintf(os.Stderr, "%v: Failed to process yaml: %v\n", progname, err.Error())
 				os.Exit(5)
 			}
 			outBytes, err := yaml.Marshal(m)
@@ -143,7 +155,7 @@ func main() {
 	}
 
 	if err != io.EOF {
-		fmt.Fprintf(os.Stderr, "%v: Failed to read yaml file %s: %v\n", progname, filename, err.Error())
+		fmt.Fprintf(os.Stderr, "%v: Error reading input stream: %v\n", progname, err.Error())
 		os.Exit(3)
 	}
 

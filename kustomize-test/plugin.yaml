@@ -5,7 +5,7 @@ metadata:
   annotations:
     config.kubernetes.io/function: |
       container:
-        image: example.docker.com/my-functions/chart-inflator:0.1.6
+        image: kustomize-field-include:v0.0.1
 # currently ignored        
 spec:
   foo: bar
