@@ -7,11 +7,13 @@ import (
 	b64 "encoding/base64"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"io"
 	"gopkg.in/yaml.v3"
-	// "flag"
+	"flag"
+	"runtime"
 )
 
 func writeBytes(bytes *[]byte) {
@@ -131,25 +133,89 @@ func processAny(data interface{}) error {
 	return nil
 }
 
+
+func getPluginDir() string {
+	homeDir, err :=os.UserHomeDir()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Failed to get user's home directory\n")
+		os.Exit(2)
+	}
+	return filepath.FromSlash(homeDir + "/.config/kustomize/plugin/kustomize-utils.dudinea.org/v1/fieldincludetransformer")
+}
+
+
+func copyfile(src string, dst string) error {
+	fmt.Fprintf(os.Stderr, "copy '%v' to '%v'\n", src, dst)
+        sourceFileStat, err := os.Stat(src)
+        if err != nil {
+                return err
+        }
+
+        if !sourceFileStat.Mode().IsRegular() {
+                return fmt.Errorf("%s is not a regular file", src)
+        }
+
+        source, err := os.Open(src)
+        if err != nil {
+                return err
+        }
+        defer source.Close()
+
+	
+        destination, err := os.Create(dst)
+	if err != nil {
+                return err
+        }
+
+	if runtime.GOOS != "windows" {
+		err = os.Chmod(dst, os.FileMode(0755))
+		if err != nil {
+			return fmt.Errorf("WARNING: Failed to make file executable: %v\n", err)
+		}
+	}
+	
+        defer destination.Close()
+        _, err = io.Copy(destination, source)
+        return 	err
+}
+
+
+
 func main() {
+	var err error
 	args := os.Args
 	progname := args[0]
 
+	fs := flag.NewFlagSet("KustomizeFieldInclude", flag.ExitOnError)
+	fs.SetOutput(os.Stderr)
+
+	printUsage:=false
+	execInstall:=false
+	flag.BoolVar(&printUsage, "h", false, "Print usage")
+	flag.BoolVar(&execInstall, "i", false, "Install exec plugin")
+	flag.Parse()
 	
-	/*if len(args) < 2 {
-		fmt.Fprintf(os.Stderr, "%v: config file not provided!\nUsage: \n\t%v input_file\n", progname, progname)
+	if (printUsage) {
+		flag.Usage()
 		os.Exit(1)
 	}
-	filename := args[1]
-	*/
-	//reader, err := os.Open(filename)
+	if (execInstall) {
+		pluginDir := getPluginDir()
+		fmt.Fprintf(os.Stderr, "Installing kustomize exec plugin %v\n", pluginDir)
+		err := os.MkdirAll(pluginDir,  os.ModePerm)
+		if nil != err {
+			fmt.Fprintf(os.Stderr, "Failed to create plugin directory: %v\n", err.Error())
+		}
+		err = copyfile(args[0], pluginDir + string(filepath.Separator) + "FieldIncludeTransformer")
+		if nil == err {
+			fmt.Fprintf(os.Stderr, "Installation complete\n")
+			os.Exit(0)
+		} else {
+			fmt.Fprintf(os.Stderr, "Failed to copy plugin: %v\n", err.Error())
+			os.Exit(2)
+		}
+	}
 	reader := os.Stdin
-
-	// if nil != err {
-	// 	fmt.Fprintf(os.Stderr, "%v: Failed to open input file %s: %v\n", progname, filename, err.Error())
-	// 	os.Exit(2)
-	// }
-	var err error
 	err = nil
 
 	decoder := yaml.NewDecoder(reader)
