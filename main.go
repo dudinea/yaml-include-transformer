@@ -5,12 +5,13 @@ import (
 	//	"flag"
 	//"sigs.k8s.io/yaml"
 	b64 "encoding/base64"
-	"io"
+	"io/ioutil"
 	"os"
 	"reflect"
 	"strings"
-
+	"io"
 	"gopkg.in/yaml.v3"
+	// "flag"
 )
 
 func writeBytes(bytes *[]byte) {
@@ -23,7 +24,7 @@ func writeBytes(bytes *[]byte) {
 
 var header = []byte("---\n")
 
-// Include types
+// Include suffixes
 const TEXTFILE = "!textfile"
 const BASE64FILE = "!base64file"
 
@@ -40,36 +41,52 @@ func isInclude(k string) (include_type string, new_key string) {
 
 // FIXME: security: disallow absolute paths and other tricks
 func readFile(path string) ([]byte, error) {
-	bytes, err := os.ReadFile(path)
+	bytes, err := ioutil.ReadFile(path)
 	if nil != err {
 		return nil, err
 	}
 	return bytes, nil
 }
 
-func includeTextfile(v interface{}) ([]byte, error) {
+func includeTextfile(v interface{}) (string, error) {
+	data, err := includeFile(v)
+	if nil != err {
+		return "", err
+	}
+	return string(data), err
+}
+
+func includeFile(v interface{}) ([]byte, error) {
+	var data []byte
+	var err error 
 	switch v.(type) {
 	case string:
-		return readFile(v.(string))
+		data, err =  readFile(v.(string))
 	default:
-		return nil, fmt.Errorf("Invalid value for include specification: %v", reflect.TypeOf(v))
+		err = fmt.Errorf("Invalid value for include specification: %v", reflect.TypeOf(v))
 	}
+	if nil != err {
+		return nil, err
+	} 
+	return data, err
 }
+
 
 func include(incl_type string, k string, v interface{}) (interface{}, error) {
 	switch incl_type {
 	case TEXTFILE:
 		return includeTextfile(v)
 	case BASE64FILE:
-		data, err := includeTextfile(v)
+		data, err := includeFile(v)
 		if nil != err {
 			return "", err
 		}
-		return make([]byte, b64.StdEncoding.EncodedLen(len(data))), nil
+		encoded:=make([]byte, b64.StdEncoding.EncodedLen(len(data)))
+		b64.StdEncoding.Encode(encoded, data)
+		return string(encoded), nil
 	default:
 		return v, fmt.Errorf("Internal error: invalid include type %s", incl_type)
 	}
-
 }
 
 func processMap(m map[string]interface{}) error {
@@ -117,6 +134,8 @@ func processAny(data interface{}) error {
 func main() {
 	args := os.Args
 	progname := args[0]
+
+	
 	/*if len(args) < 2 {
 		fmt.Fprintf(os.Stderr, "%v: config file not provided!\nUsage: \n\t%v input_file\n", progname, progname)
 		os.Exit(1)

@@ -15,3 +15,10 @@ install: kustomize-field-include
 clean:
 	rm -f kustomize-field-include
 
+tests: exec-tests fn-tests
+
+exec-tests:
+	cd kustomize-exec-test && kustomize --enable-exec --enable-alpha-plugins build 
+
+fn-tests:
+	cd kustomize-exec-test && kustomize --enable-exec --enable-alpha-plugins build 
