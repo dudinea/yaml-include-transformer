@@ -226,7 +226,7 @@ func main() {
 		if nil == err {
 			err = processAny(m)
 			if nil != err {
-				//fmt.Fprintf(os.Stderr, "%v: Failed to process yaml: %v\n", progname, err.Error())
+				fmt.Fprintf(os.Stderr, "%v: Failed to process yaml: %v\n", progname, err.Error())
 				os.Exit(5)
 			}
 			outBytes, err := yaml.Marshal(m)
