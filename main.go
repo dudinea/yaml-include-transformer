@@ -1,34 +1,84 @@
 package main
 
 import (
-	"fmt"
-	//	"flag"
-	//"sigs.k8s.io/yaml"
 	b64 "encoding/base64"
+	"flag"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
-	"strings"
-	"io"
-	"gopkg.in/yaml.v3"
-	"flag"
 	"runtime"
-)
+	"strings"
 
-func writeBytes(bytes *[]byte) {
-	_, err := os.Stdout.Write(*bytes)
-	if nil != err {
-		fmt.Fprintf(os.Stderr, "%v: Failed to write output: %v\n", os.Args[0], err.Error())
-		os.Exit(5)
-	}
-}
+	"gopkg.in/yaml.v3"
+)
 
 var header = []byte("---\n")
 
 // Include suffixes
 const TEXTFILE = "!textfile"
 const BASE64FILE = "!base64file"
+
+func main() {
+	var err error
+	args := os.Args
+	//progname := args[0]
+
+	fs := flag.NewFlagSet("FieldIncludePlugin", flag.ExitOnError)
+	fs.SetOutput(os.Stderr)
+
+	printUsage := false
+	execInstall := false
+	flag.BoolVar(&printUsage, "h", false, "Print usage")
+	flag.BoolVar(&execInstall, "i", false, "Install exec plugin")
+	flag.Parse()
+
+	if printUsage {
+		flag.Usage()
+		os.Exit(1)
+	}
+	if execInstall {
+		pluginDir := getPluginDir()
+		fmt.Fprintf(os.Stderr, "Installing kustomize exec plugin %v\n", pluginDir)
+		err := os.MkdirAll(pluginDir, os.ModePerm)
+		if nil != err {
+			errexit(2, "Failed to create plugin directory: %v", err.Error())
+		}
+		err = copyfile(args[0], pluginDir+string(filepath.Separator)+"FieldIncludeTransformer")
+		if nil != err {
+			errexit(2, "Failed to copy plugin: %v", err.Error())
+		}
+		errexit(0, "Installation complete")
+	}
+	reader := os.Stdin
+	err = nil
+
+	decoder := yaml.NewDecoder(reader)
+	var m interface{}
+
+	for err == nil {
+		err = decoder.Decode(&m)
+		if nil == err {
+			err = processAny(m)
+			if nil != err {
+				errexit(5, "Failed to process yaml: %v", err.Error())
+			}
+			outBytes, err := yaml.Marshal(m)
+			if nil != err {
+				errexit(5, "Failed to convert to yaml: %v", err.Error())
+			}
+			writeBytes(&header)
+			writeBytes(&outBytes)
+		}
+	}
+
+	if err != io.EOF {
+		errexit(3, "Error reading input stream: %v", err.Error())
+	}
+
+}
 
 // return include type and original key
 func isInclude(k string) (include_type string, new_key string) {
@@ -60,19 +110,18 @@ func includeTextfile(v interface{}) (string, error) {
 
 func includeFile(v interface{}) ([]byte, error) {
 	var data []byte
-	var err error 
+	var err error
 	switch v.(type) {
 	case string:
-		data, err =  readFile(v.(string))
+		data, err = readFile(v.(string))
 	default:
 		err = fmt.Errorf("Invalid value for include specification: %v", reflect.TypeOf(v))
 	}
 	if nil != err {
 		return nil, err
-	} 
+	}
 	return data, err
 }
-
 
 func include(incl_type string, k string, v interface{}) (interface{}, error) {
 	switch incl_type {
@@ -83,7 +132,7 @@ func include(incl_type string, k string, v interface{}) (interface{}, error) {
 		if nil != err {
 			return "", err
 		}
-		encoded:=make([]byte, b64.StdEncoding.EncodedLen(len(data)))
+		encoded := make([]byte, b64.StdEncoding.EncodedLen(len(data)))
 		b64.StdEncoding.Encode(encoded, data)
 		return string(encoded), nil
 	default:
@@ -123,49 +172,42 @@ func processArray(a []interface{}) error {
 func processAny(data interface{}) error {
 	switch data.(type) {
 	case map[string]interface{}:
-		//fmt.Fprintf(os.Stderr, "switch: data is MAP\n")
 		return processMap(data.(map[string]interface{}))
 	case []interface{}:
 		return processArray(data.([]interface{}))
-		//fmt.Fprintf(os.Stderr, "switch: data is ARRAY\n")
-
 	}
 	return nil
 }
 
-
 func getPluginDir() string {
-	homeDir, err :=os.UserHomeDir()
+	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to get user's home directory\n")
-		os.Exit(2)
+		errexit(2, "Failed to get user's home directory")
 	}
 	return filepath.FromSlash(homeDir + "/.config/kustomize/plugin/kustomize-utils.dudinea.org/v1/fieldincludetransformer")
 }
 
-
 func copyfile(src string, dst string) error {
 	fmt.Fprintf(os.Stderr, "copy '%v' to '%v'\n", src, dst)
-        sourceFileStat, err := os.Stat(src)
-        if err != nil {
-                return err
-        }
-
-        if !sourceFileStat.Mode().IsRegular() {
-                return fmt.Errorf("%s is not a regular file", src)
-        }
-
-        source, err := os.Open(src)
-        if err != nil {
-                return err
-        }
-        defer source.Close()
-
-	
-        destination, err := os.Create(dst)
+	sourceFileStat, err := os.Stat(src)
 	if err != nil {
-                return err
-        }
+		return err
+	}
+
+	if !sourceFileStat.Mode().IsRegular() {
+		return fmt.Errorf("%s is not a regular file", src)
+	}
+
+	source, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer source.Close()
+
+	destination, err := os.Create(dst)
+	if err != nil {
+		return err
+	}
 
 	if runtime.GOOS != "windows" {
 		err = os.Chmod(dst, os.FileMode(0755))
@@ -173,75 +215,21 @@ func copyfile(src string, dst string) error {
 			return fmt.Errorf("WARNING: Failed to make file executable: %v\n", err)
 		}
 	}
-	
-        defer destination.Close()
-        _, err = io.Copy(destination, source)
-        return 	err
+
+	defer destination.Close()
+	_, err = io.Copy(destination, source)
+	return err
 }
 
+func errexit(code int, msg string, args ...interface{}) {
+	fmt.Fprint(os.Stderr, os.Args[0])
+	fmt.Fprintf(os.Stderr, msg+"\n", args...)
+	os.Exit(code)
+}
 
-
-func main() {
-	var err error
-	args := os.Args
-	progname := args[0]
-
-	fs := flag.NewFlagSet("KustomizeFieldInclude", flag.ExitOnError)
-	fs.SetOutput(os.Stderr)
-
-	printUsage:=false
-	execInstall:=false
-	flag.BoolVar(&printUsage, "h", false, "Print usage")
-	flag.BoolVar(&execInstall, "i", false, "Install exec plugin")
-	flag.Parse()
-	
-	if (printUsage) {
-		flag.Usage()
-		os.Exit(1)
+func writeBytes(bytes *[]byte) {
+	_, err := os.Stdout.Write(*bytes)
+	if nil != err {
+		errexit(5, "Failed to write output: %v", err.Error())
 	}
-	if (execInstall) {
-		pluginDir := getPluginDir()
-		fmt.Fprintf(os.Stderr, "Installing kustomize exec plugin %v\n", pluginDir)
-		err := os.MkdirAll(pluginDir,  os.ModePerm)
-		if nil != err {
-			fmt.Fprintf(os.Stderr, "Failed to create plugin directory: %v\n", err.Error())
-		}
-		err = copyfile(args[0], pluginDir + string(filepath.Separator) + "FieldIncludeTransformer")
-		if nil == err {
-			fmt.Fprintf(os.Stderr, "Installation complete\n")
-			os.Exit(0)
-		} else {
-			fmt.Fprintf(os.Stderr, "Failed to copy plugin: %v\n", err.Error())
-			os.Exit(2)
-		}
-	}
-	reader := os.Stdin
-	err = nil
-
-	decoder := yaml.NewDecoder(reader)
-	var m interface{}
-
-	for err == nil {
-		err = decoder.Decode(&m)
-		if nil == err {
-			err = processAny(m)
-			if nil != err {
-				fmt.Fprintf(os.Stderr, "%v: Failed to process yaml: %v\n", progname, err.Error())
-				os.Exit(5)
-			}
-			outBytes, err := yaml.Marshal(m)
-			if nil != err {
-				fmt.Fprintf(os.Stderr, "%v: Failed to convert to yaml: %v\n", progname, err.Error())
-				os.Exit(5)
-			}
-			writeBytes(&header)
-			writeBytes(&outBytes)
-		}
-	}
-
-	if err != io.EOF {
-		fmt.Fprintf(os.Stderr, "%v: Error reading input stream: %v\n", progname, err.Error())
-		os.Exit(3)
-	}
-
 }
