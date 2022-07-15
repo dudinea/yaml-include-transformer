@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: gatekeeper-system
 resources:
   - single_include.yaml
+  - single_include2.yaml
   
 transformers:
   - plugin.yaml
