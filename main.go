@@ -21,6 +21,26 @@ var header = []byte("---\n")
 const TEXTFILE = "!textfile"
 const BASE64FILE = "!base64file"
 
+const helpstr = ":\nAn Simple Include Transformer for YAML files --\n" +
+	"Reads YAML resources from stdin or input files and performs\n" +
+	"include substitutions.\n" +
+	"see https://github.com/dudinea/yaml-include\n" +
+	"\n" +
+	"Usage: \n" +
+	"  %s [configfile] [options ...]\n" +
+	"\n" +
+	"Options:\n" +
+	"  -h --help	     Print this usage message\n" +
+	"  -i --install      Install as kustomize exec plugin\n" +
+	"  -p --plugin-conf  Print kustomize plugin configuration file\n" +
+	"  -f --file file    Input file\n" +
+	"  -u --up-dir       Allow specifying .. in file paths\n" +
+	"  -l --links        Allow following symlinks .. in file paths\n" +
+	"\n" +
+	"Supported YAML include directives:\n" +
+	"  foo!textfile: file.txt    -- include file.txt as text field\n" +
+	"  bar:base64file: file.bin  -- include file.bin as base64 text\n"
+
 func main() {
 	var err error
 	args := os.Args
@@ -31,13 +51,14 @@ func main() {
 
 	printUsage := false
 	execInstall := false
+	flag.BoolVar(&printUsage, "help", false, "Print usage")
 	flag.BoolVar(&printUsage, "h", false, "Print usage")
-	flag.BoolVar(&execInstall, "i", false, "Install exec plugin")
+	flag.BoolVar(&execInstall, "install", false, "Install exec plugin")
+
 	flag.Parse()
 
 	if printUsage {
-		flag.Usage()
-		os.Exit(1)
+		errexit(1, helpstr, os.Args[0])
 	}
 	if execInstall {
 		pluginDir := getPluginDir()
@@ -77,6 +98,10 @@ func main() {
 	if err != io.EOF {
 		errexit(3, "Error reading input stream: %v", err.Error())
 	}
+
+}
+
+func usage() {
 
 }
 
