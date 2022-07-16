@@ -1,4 +1,4 @@
 FROM stakater/base-alpine:latest
-ADD ./kustomize-field-include /usr/local/bin/
-ENTRYPOINT /usr/local/bin/kustomize-field-include
+ADD ./yaml-include-transformer /usr/local/bin/
+ENTRYPOINT /usr/local/bin/yaml-include-transformer
 

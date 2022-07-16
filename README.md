@@ -20,7 +20,7 @@ program:
 Run yaml processor:
 
 ```shell
-kustomize-field-include < test.yaml
+yaml-include-transformer < test.yaml
 ```
 
 Output:
@@ -38,9 +38,9 @@ program:
 Installation as an "exec" plugin
 
 ```shell
-./kustomize-field-include -i
+./yaml-include-transformer -i
 Installing kustomize exec plugin /home/dudin/.config/kustomize/plugin/kustomize-utils.dudinea.org/v1/fieldincludetransformer
-copy './kustomize-field-include' to '/home/dudin/.config/kustomize/plugin/kustomize-utils.dudinea.org/v1/fieldincludetransformer/FieldIncludeTransformer'
+copy './yaml-include-transformer' to '/home/dudin/.config/kustomize/plugin/kustomize-utils.dudinea.org/v1/fieldincludetransformer/FieldIncludeTransformer'
 Installation complete
 ```
 

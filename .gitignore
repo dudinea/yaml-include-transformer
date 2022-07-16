@@ -1,4 +1,4 @@
-kustomize-field-include
+yaml-include-transformer
 *~
 \#*\#
 go.sum

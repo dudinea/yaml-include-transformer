@@ -3,13 +3,12 @@ package main
 import (
 	"os"
 
-	"github.com/dudinea/kustomize-field-include/pkg/config"
-	"github.com/dudinea/kustomize-field-include/pkg/kustomize"
-	"github.com/dudinea/kustomize-field-include/pkg/transform"
+	"github.com/dudinea/yaml-include-transformer/pkg/config"
+	"github.com/dudinea/yaml-include-transformer/pkg/kustomize"
+	"github.com/dudinea/yaml-include-transformer/pkg/transform"
 )
 
 func main() {
-	var err error
 	err, conf := config.ReadArgs(os.Args[1:])
 	if nil != err {
 		os.Exit(1)
@@ -30,7 +29,15 @@ func main() {
 		kustomize.PluginConf()
 		os.Exit(0)
 	}
-
-	reader := os.Stdin
+	var reader *os.File
+	if conf.File == "" {
+		reader = os.Stdin
+	} else {
+		reader, err = os.Open(conf.File)
+		defer reader.Close()
+		if nil != err {
+			transform.Errexit(5, "Failed to open input: %v", err)
+		}
+	}
 	transform.Transform(reader)
 }

@@ -1,9 +1,0 @@
----
-apiVersion: v1
-kind: fooo
-metadata:
-  name: aws-xxx-apps
-  labels:
-    "bar!textfile": test.txt
-    "bar64!base64file": test.txt
-  

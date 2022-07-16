@@ -20,7 +20,7 @@ const BASE64FILE = "!base64file"
 func Transform(reader *os.File) {
 	var err error = nil
 
-	decoder := yaml.NewDecoder(os.Stdin)
+	decoder := yaml.NewDecoder(reader)
 	var m interface{}
 
 	for err == nil {
@@ -28,7 +28,7 @@ func Transform(reader *os.File) {
 		if nil == err {
 			err = processAny(m)
 			if nil != err {
-				Errexit(5, "Failed to process yaml: %v", err.Error())
+				Errexit(5, "Failed to data: %v", err.Error())
 			}
 			outBytes, err := yaml.Marshal(m)
 			if nil != err {
@@ -38,9 +38,8 @@ func Transform(reader *os.File) {
 			writeBytes(&outBytes)
 		}
 	}
-
 	if err != io.EOF {
-		Errexit(3, "Error reading input stream: %v", err.Error())
+		Errexit(3, "Error decoding input stream: %v", err.Error())
 	}
 }
 
@@ -106,10 +105,8 @@ func include(incl_type string, k string, v interface{}) (interface{}, error) {
 
 func processMap(m map[string]interface{}) error {
 	for k, v := range m {
-		//fmt.Fprintf(os.Stderr, "%v: process map: %v: %v\n", os.Args[0], k, v)
 		incl_type, new_key := isInclude(k)
 		if incl_type != "" {
-			//fmt.Fprintf(os.Stderr, "%v: include: %v: %v\n", os.Args[0], k, v)
 			newval, err := include(incl_type, k, v)
 			if err != nil {
 				return err

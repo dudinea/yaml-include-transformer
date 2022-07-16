@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/dudinea/kustomize-field-include/pkg/config"
+	"github.com/dudinea/yaml-include-transformer/pkg/config"
 )
 
 func getPluginDir() (string, error) {
