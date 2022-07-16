@@ -2,7 +2,6 @@ package main
 
 import (
 	b64 "encoding/base64"
-	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -12,6 +11,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/dudinea/kustomize-field-include/pkg/config"
 	"gopkg.in/yaml.v3"
 )
 
@@ -21,46 +21,19 @@ var header = []byte("---\n")
 const TEXTFILE = "!textfile"
 const BASE64FILE = "!base64file"
 
-const helpstr = ":\nAn Simple Include Transformer for YAML files --\n" +
-	"Reads YAML resources from stdin or input files and performs\n" +
-	"include substitutions.\n" +
-	"see https://github.com/dudinea/yaml-include\n" +
-	"\n" +
-	"Usage: \n" +
-	"  %s [configfile] [options ...]\n" +
-	"\n" +
-	"Options:\n" +
-	"  -h --help	     Print this usage message\n" +
-	"  -i --install      Install as kustomize exec plugin\n" +
-	"  -p --plugin-conf  Print kustomize plugin configuration file\n" +
-	"  -f --file file    Input file\n" +
-	"  -u --up-dir       Allow specifying .. in file paths\n" +
-	"  -l --links        Allow following symlinks .. in file paths\n" +
-	"\n" +
-	"Supported YAML include directives:\n" +
-	"  foo!textfile: file.txt    -- include file.txt as text field\n" +
-	"  bar:base64file: file.bin  -- include file.bin as base64 text\n"
-
 func main() {
 	var err error
 	args := os.Args
 	//progname := args[0]
-
-	fs := flag.NewFlagSet("FieldIncludePlugin", flag.ExitOnError)
-	fs.SetOutput(os.Stderr)
-
-	printUsage := false
-	execInstall := false
-	flag.BoolVar(&printUsage, "help", false, "Print usage")
-	flag.BoolVar(&printUsage, "h", false, "Print usage")
-	flag.BoolVar(&execInstall, "install", false, "Install exec plugin")
-
-	flag.Parse()
-
-	if printUsage {
-		errexit(1, helpstr, os.Args[0])
+	err, conf := config.ReadArgs(args[1:])
+	if nil != err {
+		os.Exit(1)
 	}
-	if execInstall {
+	if conf.PrintUsage {
+		config.Help()
+		os.Exit(1)
+	}
+	if conf.ExecInstall {
 		pluginDir := getPluginDir()
 		fmt.Fprintf(os.Stderr, "Installing kustomize exec plugin %v\n", pluginDir)
 		err := os.MkdirAll(pluginDir, os.ModePerm)
