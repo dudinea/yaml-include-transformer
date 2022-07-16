@@ -6,12 +6,11 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"reflect"
-	"runtime"
 	"strings"
 
 	"github.com/dudinea/kustomize-field-include/pkg/config"
+	"github.com/dudinea/kustomize-field-include/pkg/kustomize"
 	"gopkg.in/yaml.v3"
 )
 
@@ -23,9 +22,7 @@ const BASE64FILE = "!base64file"
 
 func main() {
 	var err error
-	args := os.Args
-	//progname := args[0]
-	err, conf := config.ReadArgs(args[1:])
+	err, conf := config.ReadArgs(os.Args[1:])
 	if nil != err {
 		os.Exit(1)
 	}
@@ -34,18 +31,18 @@ func main() {
 		os.Exit(1)
 	}
 	if conf.ExecInstall {
-		pluginDir := getPluginDir()
-		fmt.Fprintf(os.Stderr, "Installing kustomize exec plugin %v\n", pluginDir)
-		err := os.MkdirAll(pluginDir, os.ModePerm)
+		err = kustomize.PluginInstall()
 		if nil != err {
-			errexit(2, "Failed to create plugin directory: %v", err.Error())
+			errexit(2, "Kustomize exec plugin installation failed: %v", err)
+		} else {
+			errexit(0, "Kustomize exec plugin Installation complete")
 		}
-		err = copyfile(args[0], pluginDir+string(filepath.Separator)+"FieldIncludeTransformer")
-		if nil != err {
-			errexit(2, "Failed to copy plugin: %v", err.Error())
-		}
-		errexit(0, "Installation complete")
 	}
+	if conf.PluginConf {
+		kustomize.PluginConf()
+		os.Exit(0)
+	}
+
 	reader := os.Stdin
 	err = nil
 
@@ -71,10 +68,6 @@ func main() {
 	if err != io.EOF {
 		errexit(3, "Error reading input stream: %v", err.Error())
 	}
-
-}
-
-func usage() {
 
 }
 
@@ -175,48 +168,6 @@ func processAny(data interface{}) error {
 		return processArray(data.([]interface{}))
 	}
 	return nil
-}
-
-func getPluginDir() string {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		errexit(2, "Failed to get user's home directory")
-	}
-	return filepath.FromSlash(homeDir + "/.config/kustomize/plugin/kustomize-utils.dudinea.org/v1/fieldincludetransformer")
-}
-
-func copyfile(src string, dst string) error {
-	fmt.Fprintf(os.Stderr, "copy '%v' to '%v'\n", src, dst)
-	sourceFileStat, err := os.Stat(src)
-	if err != nil {
-		return err
-	}
-
-	if !sourceFileStat.Mode().IsRegular() {
-		return fmt.Errorf("%s is not a regular file", src)
-	}
-
-	source, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer source.Close()
-
-	destination, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-
-	if runtime.GOOS != "windows" {
-		err = os.Chmod(dst, os.FileMode(0755))
-		if err != nil {
-			return fmt.Errorf("WARNING: Failed to make file executable: %v\n", err)
-		}
-	}
-
-	defer destination.Close()
-	_, err = io.Copy(destination, source)
-	return err
 }
 
 func errexit(code int, msg string, args ...interface{}) {

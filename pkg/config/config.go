@@ -9,17 +9,21 @@ import (
 type Config struct {
 	PrintUsage  bool
 	ExecInstall bool
+	PluginConf  bool
 	File        string
 	Updir       bool
 	Links       bool
 	Abs         bool
 }
 
+const Progname = "YamlIncludeTransformer"
+const ApiVersion = "kustomize-utils.dudinea.org/v1"
+
 var UsageFunc func()
 
 func ReadArgs(args []string) (error, Config) {
 	conf := Config{}
-	fs := flag.NewFlagSet("YamlIncludeTransformer", flag.ContinueOnError)
+	fs := flag.NewFlagSet(Progname, flag.ContinueOnError)
 	UsageFunc = func() {
 		fmt.Fprintf(os.Stderr, usagestr, os.Args[0])
 	}
@@ -28,8 +32,8 @@ func ReadArgs(args []string) (error, Config) {
 	fs.BoolVar(&conf.PrintUsage, "h", false, "Print help message")
 	fs.BoolVar(&conf.ExecInstall, "install", false, "Install as kustomize exec plugin")
 	fs.BoolVar(&conf.ExecInstall, "i", false, "Install as kustomize exec plugin")
-	fs.BoolVar(&conf.ExecInstall, "p", false, "Print kustomize plugin configuration")
-	fs.BoolVar(&conf.ExecInstall, "plugin-conf", false, "Print kustomize plugin configuration")
+	fs.BoolVar(&conf.PluginConf, "p", false, "Print kustomize plugin configuration")
+	fs.BoolVar(&conf.PluginConf, "plugin-conf", false, "Print kustomize plugin configuration")
 	fs.StringVar(&conf.File, "f", "", "Input file")
 	fs.StringVar(&conf.File, "file", "", "Input file")
 	fs.BoolVar(&conf.Updir, "u", false, "Allow specifying .. in file paths")
