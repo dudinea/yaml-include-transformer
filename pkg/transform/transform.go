@@ -58,7 +58,6 @@ func isInclude(k string) (include_type string, new_key string) {
 	return "", k
 }
 
-// FIXME: security: disallow absolute paths and other tricks
 func readFile(path string) ([]byte, error) {
 	checkPath(path)
 	bytes, err := ioutil.ReadFile(path)
@@ -135,7 +134,7 @@ func resolveAndCheckLinks(path string) string {
 func checkAbsPath(path string) {
 	if !Conf.Abs {
 		if filepath.IsAbs(path) {
-			Errexit(6, "Error: absolute file path '%s' is not allowed")
+			Errexit(6, "Error: absolute file path '%s' is not allowed", path)
 		}
 	}
 }
@@ -146,7 +145,7 @@ func checkUpDir(path string) {
 		parts := strings.Split(platformPath, string(os.PathSeparator))
 		for _, v := range parts {
 			if v == ".." {
-				Errexit(6, "Error: absolute file path '%s' is not allowed")
+				Errexit(6, "Error: using .. in paths is not allowed: '%s'", path)
 			}
 		}
 	}
