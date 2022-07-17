@@ -14,6 +14,7 @@ type Config struct {
 	Updir       bool
 	Links       bool
 	Abs         bool
+	Version     bool
 }
 
 const Progname = "YamlIncludeTransformer"
@@ -40,8 +41,10 @@ func ReadArgs(args []string) (error, Config) {
 	fs.BoolVar(&conf.Updir, "updir", false, "Allow specifying .. in file paths")
 	fs.BoolVar(&conf.Links, "l", false, "Allow following symlinks in file paths")
 	fs.BoolVar(&conf.Links, "links", false, "Allow following symlinks in file paths")
-	fs.BoolVar(&conf.Links, "a", false, "Allow following symlinks in file paths")
-	fs.BoolVar(&conf.Links, "abs", false, "Allow absolute file paths")
+	fs.BoolVar(&conf.Abs, "a", false, "Allow following symlinks in file paths")
+	fs.BoolVar(&conf.Abs, "abs", false, "Allow absolute file paths")
+	fs.BoolVar(&conf.Version, "v", false, "Allow following symlinks in file paths")
+	fs.BoolVar(&conf.Version, "version", false, "Allow absolute file paths")
 	err := fs.Parse(args)
 	return err, conf
 }
@@ -67,6 +70,7 @@ const usagestr = "\nUsage: \n" +
 	"  -u --up-dir         Allow specifying .. in file paths\n" +
 	"  -l --links          Allow following symlinks in file paths\n" +
 	"  -a --abs            Allow absolute paths in file paths\n" +
+	"  -v --version        Print program version\n" +
 	"\n" +
 	"Supported YAML include directives:\n" +
 	"  foo!textfile: file.txt    -- include file.txt as text field\n" +

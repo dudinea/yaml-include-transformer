@@ -79,6 +79,7 @@ Options:
 * `-u --updir`          Allow specifying .. in file paths
 * `-l --links`          Allow following symlinks in file paths
 * `-a --abs`            Allow absolute paths in file paths
+* `-v --version`        Print program version
 
 
 ## Supported Include directives

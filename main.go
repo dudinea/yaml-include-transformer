@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/dudinea/yaml-include-transformer/pkg/config"
@@ -8,10 +9,16 @@ import (
 	"github.com/dudinea/yaml-include-transformer/pkg/transform"
 )
 
+var version string
+
 func main() {
 	err, conf := config.ReadArgs(os.Args[1:])
 	if nil != err {
 		os.Exit(1)
+	}
+	if conf.Version {
+		fmt.Println(version)
+		os.Exit(0)
 	}
 	if conf.PrintUsage {
 		config.Help()

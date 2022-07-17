@@ -1,7 +1,7 @@
-
+VERSION=$(shell cat .version)
 
 build: main.go
-	go build
+	go build -ldflags "-X main.version=$(VERSION)"
 
 build_docker:
 	docker build -t yaml-include-transformer:v0.0.1 .
