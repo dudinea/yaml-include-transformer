@@ -29,7 +29,7 @@ program:
   code: |
     print("Hello!\n")
   data: ODIzY2YxODYyNDVmNTBkMzk0YjMxMDlmYTNiM2E5NjYgIC0K
-  language: python
+  language: lua
 ```
 
 ## Usage as kustomize plugin
