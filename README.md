@@ -76,7 +76,7 @@ Options:
 * `-i --install`        Install as kustomize exec plugin
 * `-p --plugin-conf`    Print kustomize plugin configuration file
 * `-f --file file.yaml` Specify input file instead of standard input
-* `-u --up-dir`         Allow specifying .. in file paths
+* `-u --updir`          Allow specifying .. in file paths
 * `-l --links`          Allow following symlinks in file paths
 * `-a --abs`            Allow absolute paths in file paths
 
