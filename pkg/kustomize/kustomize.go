@@ -31,7 +31,7 @@ func PluginInstall() error {
 	if nil != err {
 		return fmt.Errorf("Failed to create plugin directory: %v", err.Error())
 	}
-	targetPath := pluginDir + string(filepath.Separator) + "FieldIncludeTransformer"
+	targetPath := pluginDir + string(filepath.Separator) + config.Progname
 	err = copyfile(os.Args[0], targetPath)
 	// workaround for a Windows specific bug of some kustomize versions:
 	//  it needs both files (with and without .exe extension)

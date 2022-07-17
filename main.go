@@ -39,5 +39,6 @@ func main() {
 			transform.Errexit(5, "Failed to open input: %v", err)
 		}
 	}
+	transform.Conf = &conf
 	transform.Transform(reader)
 }

@@ -1,5 +1,0 @@
-apiVersion: kustomize-utils.dudinea.org/v1
-kind: FieldIncludeTransformer
-metadata:
-  name: notImportantHere
-
