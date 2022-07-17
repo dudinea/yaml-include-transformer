@@ -83,21 +83,27 @@ Options:
 
 ## Supported Include directives
 
-* foo!textfile: file.txt    -- include file.txt as text field
-* bar:base64file: file.bin  -- include file.bin as base64 text
+* foo!textfile: file.txt    -- include file.txt as a text field
+* bar!base64file: file.bin  -- include file.bin as base64 text
 
 
-## Usage as kustomize shared library based plugin
+## Configuration File
+
+Accepting configuration file as first argument is required for
+compatibility with the kustomize exec plugin protocol. Configuration
+file is accepted but not actually used.
+
+## Usage as Kustomize shared library based plugin
 
 [TBD]
 
-## Usage as kustomize KRM function based plugin
+## Usage as Kustomize KRM function based plugin
 
 [TBD]
 
 ## Configuring ArgoCD to use the plugin
 
-
+[TBD]
 
 
 
