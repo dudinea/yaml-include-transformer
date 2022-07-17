@@ -34,7 +34,7 @@ program:
 
 ## Usage as kustomize plugin
 
-Installation as an "exec" plugin
+Installation as an "exec" plugin:
 
 ```shell
 yaml-include-transformer -i
@@ -83,15 +83,15 @@ Options:
 
 ## Supported Include directives
 
-* foo!textfile: file.txt    -- include file.txt as a text field
-* bar!base64file: file.bin  -- include file.bin as base64 text
+* `foo!textfile: file.txt`    include file.txt as a text field
+* `bar!base64file: file.bin`  include file.bin as base64 text
 
 
 ## Configuration File
 
-Accepting configuration file as first argument is required for
-compatibility with the kustomize exec plugin protocol. Configuration
-file is accepted but not actually used.
+Accepting configuration file as first program argument is required for
+compatibility with the Kustomize exec plugin protocol. The
+configuration file is accepted but not actually used.
 
 ## Usage as Kustomize shared library based plugin
 
