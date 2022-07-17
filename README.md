@@ -1,10 +1,9 @@
-# kustomize field include processor
+Yaml Include Transformer
+========================
 
+A simple YAML processor that implements include directives for YAML files.
 
-A simple YAML processor that implements file include for
-YAML files.
-
-## Standalone usage
+## Example of Standalone Usage
 
 An example of YAML input:
 
@@ -12,8 +11,8 @@ An example of YAML input:
 ```yaml
 program:
   language: python
-  code!textfile:  source.py
-  input!base64file: data.bin
+  code!textfile:  source.lua
+  data!base64file: data.bin
 
 ```
 
@@ -38,24 +37,20 @@ program:
 Installation as an "exec" plugin
 
 ```shell
-./yaml-include-transformer -i
+yaml-include-transformer -i
 Installing kustomize exec plugin /home/dudin/.config/kustomize/plugin/kustomize-utils.dudinea.org/v1/fieldincludetransformer
 copy './yaml-include-transformer' to '/home/dudin/.config/kustomize/plugin/kustomize-utils.dudinea.org/v1/fieldincludetransformer/FieldIncludeTransformer'
 Installation complete
 ```
 
-
-
 Create plugin configuration file (p.e. include-plugin.yaml):
 
-```yaml
-apiVersion: kustomize-utils.dudinea.org/v1
-kind: FieldIncludeTransformer
-metadata:
-  name: notImportantHere
+```shell
+yaml-include-transformer -p > include-plugin.yaml
+
 ```
 
-Add transformer to the `kustomization.yaml` file:
+Add a transformer declaration to the `kustomization.yaml` file:
 
 ```yaml
 transformers:
@@ -66,6 +61,31 @@ Invoke kustomize build:
 ```shell
 kustomize --enable-exec --enable-alpha-plugins build 
 ```
+
+## Command Line Arguments Reference
+
+
+Usage: 
+
+```
+  yaml-include-transformer [configfile] [options ...]
+```
+Options:
+
+* -h --help	          Print usage message
+* -i --install        Install as kustomize exec plugin
+* -p --plugin-conf    Print kustomize plugin configuration file
+* -f --file file.yaml Specify input file instead of standard input
+* -u --up-dir         Allow specifying .. in file paths
+* -l --links          Allow following symlinks in file paths
+* -a --abs            Allow absolute paths in file paths
+
+
+## Supported Include directives
+
+* foo!textfile: file.txt    -- include file.txt as text field
+* bar:base64file: file.bin  -- include file.bin as base64 text
+
 
 ## Usage as kustomize shared library based plugin
 
@@ -78,35 +98,8 @@ kustomize --enable-exec --enable-alpha-plugins build
 ## Configuring ArgoCD to use the plugin
 
 
-## Configuration file
-
-Not yet
-
-## Security considerations
-
-[TBD]
 
 
-## Links
 
-On KRM
-  
-https://github.com/kubernetes/enhancements/tree/master/keps/sig-cli/2906-kustomize-function-catalog
-
-
-https://github.com/kubernetes-sigs/kustomize/issues/3936
-
-https://github.com/kubernetes/enhancements/issues/2906
-
-https://github.com/kubernetes/enhancements/tree/master/keps/sig-cli/2953-kustomize-plugin-graduation
-
-
-https://github.com/kubernetes-sigs/cli-experimental/pull/211
-
-https://github.com/kubernetes/enhancements/issues/2953
-
-https://kubectl.docs.kubernetes.io/guides/extending_kustomize/exec_krm_functions/
-
-https://kubectl.docs.kubernetes.io/guides/extending_kustomize/containerized_krm_functions/
 
 
