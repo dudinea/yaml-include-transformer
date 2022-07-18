@@ -10,7 +10,7 @@ An example of YAML input:
 
 ```yaml
 program:
-  language: python
+  language: lua
   code!textfile:  source.lua
   data!base64file: data.bin
 
