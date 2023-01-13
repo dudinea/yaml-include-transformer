@@ -14,6 +14,8 @@ install: yaml-include-transformer
 clean:
 	rm -v -f yaml-include-transformer
 
+test_examples:
+	cd examples && ../yaml-include-transformer < example.yaml
 
 kustomize_tests: test_install
 

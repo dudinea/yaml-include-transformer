@@ -1,0 +1,7 @@
+program:
+  language: lua
+  code!textfile:  source.lua
+  data!base64file: data.bin
+  labels!jsonfile: labels.json
+  array!jsonfile: array.json
+  
