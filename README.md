@@ -13,7 +13,8 @@ program:
   language: lua
   code!textfile:  source.lua
   data!base64file: data.bin
-  labels:jsonfile: labels.json
+  labels!jsonfile: labels.json
+  sumbmap!yamlfile: submap.yaml
 
 ```
 
@@ -31,9 +32,17 @@ program:
     print("Hello!\n")
   data: ODIzY2YxODYyNDVmNTBkMzk0YjMxMDlmYTNiM2E5NjYgIC0K
   labels:
-	foo: bar
-	results: [1, 2, 3]
+    foo: bar
+    results: [1, 2, 3]
   language: lua
+  submap:
+    attr: val
+    list:
+      - one
+      - two
+      - true
+      - false
+  
 ```
 
 ## Usage as kustomize plugin

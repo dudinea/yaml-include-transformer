@@ -4,4 +4,4 @@ program:
   data!base64file: data.bin
   labels!jsonfile: labels.json
   array!jsonfile: array.json
-  
+  submap!yamlfile: submap.yaml

@@ -21,10 +21,9 @@ var header = []byte("---\n")
 const TEXTFILE = "!textfile"
 const BASE64FILE = "!base64file"
 const JSONFILE = "!jsonfile"
+const YAMLFILE = "!yamlfile"
 
-//const YAMLFILE = "!yamlfile"
-
-var DIRECTIVES [3]string = [3]string{TEXTFILE, BASE64FILE, JSONFILE}
+var DIRECTIVES [4]string = [4]string{TEXTFILE, BASE64FILE, JSONFILE, YAMLFILE}
 
 var Conf *config.Config
 
@@ -116,6 +115,15 @@ func include(incl_type string, k string, v interface{}) (interface{}, error) {
 		}
 		var decoded interface{}
 		decoder := json.NewDecoder(bytes.NewReader(data))
+		decoder.Decode(&decoded)
+		return decoded, nil
+	case YAMLFILE:
+		data, err := includeFile(v)
+		if nil != err {
+			return "", err
+		}
+		var decoded interface{}
+		decoder := yaml.NewDecoder(bytes.NewReader(data))
 		decoder.Decode(&decoded)
 		return decoded, nil
 	default:
