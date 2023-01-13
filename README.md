@@ -13,6 +13,7 @@ program:
   language: lua
   code!textfile:  source.lua
   data!base64file: data.bin
+  labels:jsonfile: labels.json
 
 ```
 
@@ -29,6 +30,9 @@ program:
   code: |
     print("Hello!\n")
   data: ODIzY2YxODYyNDVmNTBkMzk0YjMxMDlmYTNiM2E5NjYgIC0K
+  labels:
+	foo: bar
+	results: [1, 2, 3]
   language: lua
 ```
 

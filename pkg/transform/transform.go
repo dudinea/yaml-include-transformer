@@ -1,7 +1,9 @@
 package transform
 
 import (
+	"bytes"
 	b64 "encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -18,6 +20,11 @@ var header = []byte("---\n")
 
 const TEXTFILE = "!textfile"
 const BASE64FILE = "!base64file"
+const JSONFILE = "!jsonfile"
+
+//const YAMLFILE = "!yamlfile"
+
+var DIRECTIVES [3]string = [3]string{TEXTFILE, BASE64FILE, JSONFILE}
 
 var Conf *config.Config
 
@@ -32,7 +39,7 @@ func Transform(reader *os.File) {
 		if nil == err {
 			err = processAny(m)
 			if nil != err {
-				Errexit(5, "Failed to data: %v", err.Error())
+				Errexit(5, "Failed to process data: %v", err.Error())
 			}
 			outBytes, err := yaml.Marshal(m)
 			if nil != err {
@@ -50,10 +57,10 @@ func Transform(reader *os.File) {
 // return include type and original key
 func isInclude(k string) (include_type string, new_key string) {
 	//fmt.Fprintf(os.Stderr, "%v: isInclude: %v\n", os.Args[0], k)
-	if strings.HasSuffix(k, TEXTFILE) {
-		return TEXTFILE, k[0 : len(k)-len(TEXTFILE)]
-	} else if strings.HasSuffix(k, BASE64FILE) {
-		return BASE64FILE, k[0 : len(k)-len(BASE64FILE)]
+	for _, directive := range DIRECTIVES {
+		if strings.HasSuffix(k, directive) {
+			return directive, k[0 : len(k)-len(directive)]
+		}
 	}
 	return "", k
 }
@@ -102,6 +109,15 @@ func include(incl_type string, k string, v interface{}) (interface{}, error) {
 		encoded := make([]byte, b64.StdEncoding.EncodedLen(len(data)))
 		b64.StdEncoding.Encode(encoded, data)
 		return string(encoded), nil
+	case JSONFILE:
+		data, err := includeFile(v)
+		if nil != err {
+			return "", err
+		}
+		var decoded interface{}
+		decoder := json.NewDecoder(bytes.NewReader(data))
+		decoder.Decode(&decoded)
+		return decoded, nil
 	default:
 		return v, fmt.Errorf("Internal error: invalid include type %s", incl_type)
 	}
@@ -162,7 +178,10 @@ func processMap(m map[string]interface{}) error {
 			m[new_key] = newval
 			delete(m, k)
 		} else {
-			processAny(v)
+			err := processAny(v)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
