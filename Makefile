@@ -5,6 +5,7 @@ DOCKERTAG?=$(REPO):$(VERSION)
 
 ARGOCD_VER?=v2.4.4
 ARGOCD_NS?=argocd
+ARGOCD_SRC_REPO?=quay.io/argoproj/argocd
 ARGOCD_REPO?=quay.io/evgeni_doudine/argocd-yit
 ARGOCD_DOCKERTAG?=$(ARGOCD_REPO):$(ARGOCD_VER)_yit$(VERSION)
 
@@ -38,7 +39,7 @@ test_install: $(BINARY)
 	cd kustomize-tests/test-install && ./run_tests.sh
 
 argo_docker_build: $(BINARY)
-	echo 	"FROM quay.io/argoproj/argocd:$(ARGOCD_VER) \n" \
+	echo 	"FROM $(ARGOCD_SRC_REPO):$(ARGOCD_VER) \n" \
 		"ADD ./$(BINARY) /usr/local/bin\n" \
 		"RUN /usr/local/bin/$(BINARY) -i\n" > Dockerfile.argocd
 	docker build -f Dockerfile.argocd -t $(ARGOCD_DOCKERTAG) .
