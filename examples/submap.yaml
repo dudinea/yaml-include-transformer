@@ -1,5 +1,0 @@
----
-# a comment
-attr: "val"
-list: [ "one", "two", true, false ]
-  

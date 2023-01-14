@@ -1,7 +1,12 @@
-program:
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: demo-cm
+  labels!jsonfile: labels.json
+  annotations!yamlfile: annotations.yaml
+data:
   language: lua
   code!textfile:  source.lua
   data!base64file: data.bin
-  labels!jsonfile: labels.json
-  array!jsonfile: array.json
-  submap!yamlfile: submap.yaml
+

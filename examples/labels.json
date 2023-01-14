@@ -1,3 +1,4 @@
-{ "foo" : "bar",
-  "results" : [ 1, 2, 3 ]
+{
+    "environment" : "dev",
+    "app" : "demo"
 }
