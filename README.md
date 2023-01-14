@@ -9,27 +9,43 @@ An example of YAML input:
 
 
 ```yaml
-program:
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: demo-cm
+  labels!jsonfile: labels.json
+  annotations!yamlfile: annotations.yaml
+data:
   language: lua
   code!textfile:  source.lua
   data!base64file: data.bin
-
 ```
 
 Run yaml processor:
 
 ```shell
-yaml-include-transformer < test.yaml
+yaml-include-transformer < examples.yaml
 ```
 
 Output:
 
 ```yaml
-program:
-  code: |
-    print("Hello!\n")
-  data: ODIzY2YxODYyNDVmNTBkMzk0YjMxMDlmYTNiM2E5NjYgIC0K
-  language: lua
+---
+apiVersion: v1
+data:
+    code: |
+        print("Hello!\n")
+    data: hczjkOrano3o4Womxt0SFtxXVo4MuSph4w==
+    language: lua
+kind: ConfigMap
+metadata:
+    annotations:
+        aprefix/akey: avalue
+    labels:
+        app: demo
+        environment: dev
+    name: demo-cm
 ```
 
 ## Usage as kustomize plugin
@@ -84,8 +100,10 @@ Options:
 
 ## Supported Include directives
 
-* `foo!textfile: file.txt`    include file.txt as a text field
-* `bar!base64file: file.bin`  include file.bin as base64 text
+* `foo!textfile: file.txt`    include `file.txt` as a text field
+* `foo!base64file: file.bin`  include `file.bin` as base64 text
+* `foo!jsonfile: file.json`   deserialize `file.json` and include it as data structure
+* `foo!yamlfile: file.yaml`   deserialize `file.yaml` and include it as data structure
 
 
 ## Configuration File
@@ -102,7 +120,7 @@ configuration file is accepted but not actually used.
 
 [TBD]
 
-## Configuring ArgoCD to use the plugin
+## Configuring ArgoCD to use the executable plugin 
 
 [TBD]
 

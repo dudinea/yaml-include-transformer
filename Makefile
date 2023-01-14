@@ -1,27 +1,31 @@
 VERSION=$(shell cat .version)
+BINARY=yaml-include-transformer
 
-build: main.go
+$(BINARY): main.go
 	go build -ldflags "-X main.version=$(VERSION)"
 
 build_docker:
-	docker build -t yaml-include-transformer:v0.0.1 .
+	docker build -t yaml-include-transformer:$(VERSION) .
 
-PLUGINDIR=~/.config/kustomize/plugin/kustomize-utils.dudinea.org/v1/yamlincludetransformer
+install: $(BINARY)
+	go install -v
 
-install: yaml-include-transformer
-	./yaml-include-transformer -i
+install_plugin: $(BINARY)
+	./$(BINARY) -i
 
 clean:
-	rm -v -f yaml-include-transformer
+	rm -v -f $(BINARY) examples/example.out
 
+tests: test_example kustomize_tests
+
+test_example: $(BINARY)
+	cd examples && ../$(BINARY) < example.yaml | tee example.out
+	diff -u examples/example.out examples/example.test_out 
 
 kustomize_tests: test_install
-
-#test_multi_yaml test_single_yaml
 
 test_install:
 	cd kustomize-tests/test-install && ./run_tests.sh
 
-#exec-tests:
-#	cd kustomize-tests/test-install && kustomize --enable-exec --enable-alpha-plugins build 
+
 
