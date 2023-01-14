@@ -1,5 +1,7 @@
 yaml-include-transformer
 *~
 \#*\#
-
+junk/
+Dockerfile.argocd
+examples/example.out
 
