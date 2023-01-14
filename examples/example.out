@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+data:
+    code: |
+        print("Hello!\n")
+    data: hczjkOrano3o4Womxt0SFtxXVo4MuSph4w==
+    language: lua
+kind: ConfigMap
+metadata:
+    annotations:
+        aprefix/akey: avalue
+    labels:
+        app: demo
+        environment: dev
+    name: demo-cm
