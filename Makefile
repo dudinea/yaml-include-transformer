@@ -19,7 +19,7 @@ push_docker:
 	docker push $(DOCKERTAG) 
 
 install: $(BINARY)
-	go install -v
+	go install -v -ldflags "-X main.version=$(VERSION)"
 
 install_plugin: $(BINARY)
 	./$(BINARY) -i
