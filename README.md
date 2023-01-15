@@ -166,6 +166,22 @@ kubectl patch cm -n argocd argocd-cm -p '{"data" : {"kustomize.buildOptions" : "
 configmap/argocd-cm patched
 ```
 
+## Using kubectl with the plugin
+
+Run kustomize, which is built into kubectl.
+
+```shell
+kubectl kustomize  --enable-alpha-plugins=true   . 
+```
+
+AFAIK currently there is no way to enable plugins when running 
+`kubectl apply -k`, but as a workaround one could pipe
+kustomize output into kubectl apply command like:
+
+```shell
+kubectl kustomize  --enable-alpha-plugins=true . | kubectl apply -f -
+```
+
 ## Usage as Kustomize shared library based plugin
 
 [TBD]
@@ -173,10 +189,3 @@ configmap/argocd-cm patched
 ## Usage as Kustomize KRM function based plugin
 
 [TBD]
-
-
-
-
-
-
-
