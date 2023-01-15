@@ -135,7 +135,7 @@ $ env ARGOCD_REPO=some-repo/argocd-yit ARGOCD_VER=v2.4.4  make argo_docker_build
 echo 	"FROM quay.io/argoproj/argocd:v2.4.4 \n" \
 	"ADD ./yaml-include-transformer /usr/local/bin\n" \
 	"RUN /usr/local/bin/yaml-include-transformer -i\n" > Dockerfile.argocd
-docker build -f Dockerfile.argocd -t some-repo/argocd-yit:v2.4.4_yitv0.0.2-alpha .
+docker build -f Dockerfile.argocd -t some-repo/argocd-yit:v2.4.4_yitv0.0.3 .
 Sending build context to Docker daemon  7.269MB
 Step 1/3 : FROM quay.io/argoproj/argocd:v2.4.4
  ---> 34842ba61a5a
@@ -146,7 +146,7 @@ Step 3/3 : RUN /usr/local/bin/yaml-include-transformer -i
  ---> Using cache
  ---> f3c91076e12e
 Successfully built f3c91076e12e
-Successfully tagged some-repo/argocd-yit:v2.4.4_yitv0.0.2-alpha
+Successfully tagged some-repo/argocd-yit:v2.4.4_yitv0.0.3
 ```
 
 `make argo_docker_push` will push the image to the repository.
@@ -160,7 +160,7 @@ in the `argocd-cm` ConfigMap. See details in the Makefile.
 ```shell
  $ /usr/bin/env ARGOCD_REPO=some-repo/argocd-yit ARGOCD_VER=v2.4.4  make argo_patch
 kubectl patch deployment -n  argocd argocd-repo-server -p \
-'{"spec" : {"template" : { "spec" : { "containers" : [ { "image" : "some-repo/argocd-yit:v2.4.4_yitv0.0.2-alpha", "name" : "argocd-repo-server"  }]}}}}'
+'{"spec" : {"template" : { "spec" : { "containers" : [ { "image" : "some-repo/argocd-yit:v2.4.4_yitv0.0.3", "name" : "argocd-repo-server"  }]}}}}'
 deployment.apps/argocd-repo-server patched
 kubectl patch cm -n argocd argocd-cm -p '{"data" : {"kustomize.buildOptions" : "--enable-exec --enable-alpha-plugins"}}'
 configmap/argocd-cm patched
