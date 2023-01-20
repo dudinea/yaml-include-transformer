@@ -9,10 +9,10 @@ ARGOCD_SRC_REPO?=quay.io/argoproj/argocd
 ARGOCD_REPO?=quay.io/evgeni_doudine/argocd-yit
 ARGOCD_DOCKERTAG?=$(ARGOCD_REPO):$(ARGOCD_VER)_yit$(VERSION)
 
-$(BINARY): main.go  ## Build the program binary
+$(BINARY): $(wildcard pkg/**/*.go) main.go go.mod
 	go build -ldflags "-X main.version=$(VERSION)"
 
-build_docker:  ## Build docker image for the program 
+build_docker: $(BINARY)
 	docker build -t $(DOCKERTAG) .
 
 push_docker:  
