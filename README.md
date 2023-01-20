@@ -116,11 +116,13 @@ configuration file is accepted but currently it is not actually used.
 
 ## Configuring ArgoCD to use Kustomize with the plugin 
 
-[ArgoCD](https://argoproj.github.io) can be customized to support
-YAML Include Transformer with kustomize-based applications. One needs
-to modify `argocd-repo-server` deployment to use a customized
-docker image and to change kustomize command line flags.  `kustomize.buildOptions` 
-in the `argocd-cm` ConfigMap. 
+[ArgoCD](https://argoproj.github.io) can be customized to support YAML
+Include Transformer with kustomize-based applications. One needs to
+modify `argocd-repo-server` deployment to use a customized docker
+image and to change kustomize command line flags.
+`kustomize.buildOptions` in the `argocd-cm` ConfigMap. See more in the
+[ArgoCD documentaion](https://argo-cd.readthedocs.io/en/stable/operator-manual/custom_tools)
+on inclusion of custom tools.
 
 ### Building a Customized ArgoCD Image
 
