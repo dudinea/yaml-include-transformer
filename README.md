@@ -121,13 +121,13 @@ Include Transformer with kustomize-based applications. One needs to
 modify `argocd-repo-server` deployment to use a customized docker
 image and to change kustomize command line flags.
 `kustomize.buildOptions` in the `argocd-cm` ConfigMap. See more in the
-[ArgoCD documentaion](https://argo-cd.readthedocs.io/en/stable/operator-manual/custom_tools)
+[ArgoCD documentation](https://argo-cd.readthedocs.io/en/stable/operator-manual/custom_tools)
 on inclusion of custom tools.
 
 ### Building a Customized ArgoCD Image
 
 This command will add the `yaml-include-transformer` binary to the
-source argocd docker image and installs it as a customize plugin.  You
+source ArgoCD docker image and installs it as a customize plugin.  You
 can customize target repository and source image using environment
 variables, see details in the Makefile.
 
@@ -183,11 +183,31 @@ kustomize output into kubectl apply command like:
 ```shell
 kubectl kustomize  --enable-alpha-plugins=true . | kubectl apply -f -
 ```
+## Usage as Kustomize container-based function 
 
-## Usage as Kustomize shared library based plugin
+```
+---
+apiVersion: kustomize-utils.dudinea.org/v1
+kind: YamlIncludeTransformer
+metadata:
+  name: notImportantHere
+  annotations:
+    config.kubernetes.io/function: |
+      container:
+        image: quay.io/evgeni_doudine/yaml-include-transformer:v0.0.3
+spec:
+  selector:
+    matchLabels:
+      app: nginx-example
+  expose:
+    serviceName: nginx
+    port: 80
+```
+
+```
+kustomize --enable-exec --enable-alpha-plugins --mount type=bind,source=".",target=/work build 
+```
+
 
 [TBD]
 
-## Usage as Kustomize KRM function based plugin
-
-[TBD]
