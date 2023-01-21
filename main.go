@@ -10,10 +10,12 @@ import (
 	"github.com/dudinea/yaml-include-transformer/pkg/transform"
 )
 
+// these two are set from ldflags
 var version string
 var dockertag string
 
 func main() {
+	config.Dockertag = dockertag
 	err, conf := config.ReadArgs(os.Args[1:])
 	if nil != err {
 		os.Exit(1)
@@ -30,6 +32,19 @@ func main() {
 		config.Help()
 		os.Exit(1)
 	}
+	if conf.Legacy && conf.Krm {
+		transform.Errexit(1, "Invalid arguments given: %v",
+			fmt.Errorf("Cannot select both --legacy (-L) and --krm (-K)"))
+	}
+	if !conf.Legacy && !conf.Krm {
+		conf.Legacy = true
+	}
+
+	if conf.Legacy {
+		conf.Exec = true
+	}
+	transform.Conf = &conf
+
 	if conf.ExecInstall {
 		err = kustomize.PluginInstall()
 		if nil != err {
@@ -38,6 +53,7 @@ func main() {
 			transform.Errexit(0, "Kustomize exec plugin Installation complete")
 		}
 	}
+
 	if conf.PluginConf {
 		kustomize.PluginConf()
 		os.Exit(0)
@@ -58,6 +74,6 @@ func main() {
 			transform.Errexit(5, "Failed to open input: %v", err)
 		}
 	}
-	transform.Conf = &conf
+
 	transform.Transform(reader)
 }

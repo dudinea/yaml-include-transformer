@@ -9,9 +9,20 @@ import (
 	"strings"
 
 	"github.com/dudinea/yaml-include-transformer/pkg/config"
+	"github.com/dudinea/yaml-include-transformer/pkg/transform"
 )
 
 func getPluginDir() (string, error) {
+	if transform.Conf.Legacy {
+		return getPluginDirLegacy()
+	} else if transform.Conf.Exec {
+		return getPluginDirKrm()
+	} else {
+		return "", fmt.Errorf("No need to install binary when using containerized KRM plugin")
+	}
+}
+
+func getPluginDirLegacy() (string, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return "", fmt.Errorf("Failed to get user's home directory: %v", err)
@@ -19,6 +30,10 @@ func getPluginDir() (string, error) {
 	return filepath.FromSlash(homeDir +
 		"/.config/kustomize/plugin/" + config.ApiVersion + "/" +
 		strings.ToLower(config.Progname)), nil
+}
+
+func getPluginDirKrm() (string, error) {
+	return filepath.FromSlash("plugins/"), nil
 }
 
 func PluginInstall() error {
@@ -83,12 +98,30 @@ func copyfile(src string, dst string) error {
 }
 
 func PluginConf() {
-	fmt.Printf("---\n"+
-		"# put this into a file in your kustomize directory\n"+
-		"# and add filename to the list of transformers in\n"+
-		"# the kustomize.yaml\n"+
-		"apiVersion: %s\n"+
-		"kind: %s\n"+
-		"metadata:\n"+
-		"  name: notImportantHere\n", config.ApiVersion, config.Progname)
+	fmt.Printf(`---
+# put this into a file in your kustomize directory
+# and add filename to the list of transformers in
+# the kustomization.yaml
+apiVersion: %s
+kind: %s
+metadata:
+  name: notImportantHere
+`,
+		config.ApiVersion, config.Progname)
+	// FIXME: ugly - go templates? deserialize?
+	if transform.Conf.Krm {
+		fmt.Printf("  annotations:\n")
+		if transform.Conf.Exec {
+			fmt.Printf(`    config.kubernetes.io/function: |
+      exec:
+        path: ./plugins/%s
+`, config.Progname)
+		} else {
+			fmt.Printf(`    config.kubernetes.io/function: |
+      container:
+        image: %s
+`, transform.Conf.Dockertag)
+		}
+
+	}
 }

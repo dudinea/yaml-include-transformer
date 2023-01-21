@@ -16,10 +16,16 @@ type Config struct {
 	Links       bool
 	Abs         bool
 	Version     bool
+	Exec        bool
+	Krm         bool
+	Legacy      bool
+	Dockertag   string
 }
 
 const Progname = "YamlIncludeTransformer"
 const ApiVersion = "kustomize-utils.dudinea.org/v1"
+
+var Dockertag string
 
 var UsageFunc func()
 
@@ -48,6 +54,14 @@ func ReadArgs(args []string) (error, Config) {
 	fs.BoolVar(&conf.Version, "version", false, "Print program version")
 	fs.BoolVar(&conf.Debug, "d", false, "Print debug messages on stderr")
 	fs.BoolVar(&conf.Debug, "debug", false, "Print debug messages on stderr")
+	fs.BoolVar(&conf.Exec, "E", false, "Exec style plugin")
+	fs.BoolVar(&conf.Exec, "exec", false, "Exec style plugin")
+	fs.BoolVar(&conf.Krm, "K", false, "KRM-function style plugin")
+	fs.BoolVar(&conf.Krm, "krm", false, "KRM-function style plugin")
+	fs.BoolVar(&conf.Legacy, "L", false, "Legacy style plugin")
+	fs.BoolVar(&conf.Legacy, "legacy", false, "Legacy style plugin")
+	fs.StringVar(&conf.Dockertag, "dockertag", Dockertag, "Docker tag of the KRM function")
+	fs.StringVar(&conf.Dockertag, "D", Dockertag, "Docker tag of the KRM function")
 	err := fs.Parse(args)
 	return err, conf
 }
@@ -58,9 +72,9 @@ func Help() {
 }
 
 const descstr = "A Simple Include Transformer for YAML files --\n" +
-	"Reads YAML resources from stdin or input files and performs\n" +
-	"include substitutions.\n" +
-	"see https://github.com/dudinea/yaml-include\n"
+	"Reads YAML resources from stdin or an input file, and performs\n" +
+	"include substitutions. Please see\n" +
+	"https://github.com/dudinea/yaml-include-transformer"
 
 const usagestr = "\nUsage: \n" +
 	"  %s [configfile] [options ...]\n" +
@@ -69,6 +83,10 @@ const usagestr = "\nUsage: \n" +
 	"  -h --help	       Print this usage message\n" +
 	"  -i --install        Install as kustomize exec plugin\n" +
 	"  -p --plugin-conf    Print kustomize plugin configuration file\n" +
+	"  -E --exec           Exec plugin (for -p and -i)\n" +
+	"  -L --legacy         Legacy  plugin (for -p and -i), default\n" +
+	"  -K --krm            KRM-function plugin (for -p and -i)\n" +
+	"  -D --dockertag      KRM-function docker tag\n" +
 	"  -f --file file.yaml Input file\n" +
 	"  -u --up-dir         Allow specifying .. in file paths\n" +
 	"  -l --links          Allow following symlinks in file paths\n" +
