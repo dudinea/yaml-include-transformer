@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-echo "Running install-test"
+echo "running $0 in $(pwd)"
 
 BINARY=../../yaml-include-transformer
 # ensure it won't run in legacy mode

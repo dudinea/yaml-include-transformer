@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-echo "Running install-test"
+echo "running $0 in $(pwd)"
 
 BINARY=../../yaml-include-transformer
 PLUGINDIR="${HOME}/.config/kustomize/plugin/kustomize-utils.dudinea.org/v1/yamlincludetransformer"

@@ -30,10 +30,7 @@ clean:
 tests: test_standalone kustomize_tests
 
 test_standalone: $(BINARY)
-	cd examples/legacy-exec \
-		&& ../../$(BINARY) < example.yaml > example.out.test \
-		&& cat example.out
-	diff -u examples/legacy-exec/example.out examples/legacy-exec/example.out.test
+	cd examples/standalone && ./run_tests.sh
 
 kustomize_tests: test_legacy_exec test_krm_containerized test_krm_exec
 
