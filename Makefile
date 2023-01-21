@@ -25,18 +25,27 @@ install_plugin: $(BINARY)
 	./$(BINARY) -i
 
 clean:
-	rm -v -f $(BINARY) examples/example.out Dockerfile.argocd
+	rm -v -f $(BINARY) examples/*/example.out.test Dockerfile.argocd
 
-tests: test_example 
+tests: test_standalone kustomize_tests
 
-test_example: $(BINARY)
-	cd examples && ../$(BINARY) < example.yaml | tee example.out
-	diff -u examples/example.out examples/example.test_out 
+test_standalone: $(BINARY)
+	cd examples/legacy-exec \
+		&& ../../$(BINARY) < example.yaml > example.out.test \
+		&& cat example.out
+	diff -u examples/legacy-exec/example.out examples/legacy-exec/example.out.test
 
-kustomize_tests: test_install
+kustomize_tests: test_legacy_exec test_krm_containerized test_krm_exec
 
-test_install: $(BINARY)
-	cd kustomize-tests/test-install && ./run_tests.sh
+test_legacy_exec: $(BINARY)
+	cd examples/legacy-exec && ./run_kustomize_tests.sh
+
+test_krm_containerized: $(BINARY)
+	cd examples/krm-containerized && ./run_kustomize_tests.sh
+
+test_krm_exec: $(BINARY)
+	cd examples/krm-exec && ./run_kustomize_tests.sh
+
 
 argo_docker_build: $(BINARY)
 	echo 	"FROM $(ARGOCD_SRC_REPO):$(ARGOCD_VER) \n" \
@@ -53,4 +62,6 @@ argo_patch:
 	kubectl patch cm -n $(ARGOCD_NS) argocd-cm -p '{"data" : {"kustomize.buildOptions" : "--enable-exec --enable-alpha-plugins"}}'
 
 .PHONY: argo_patch argo_docker_push argo_docker_build test_install \
-	kustomize_tests test_example tests clean build_docker push_docker install install_plugin 
+	kustomize_tests test_standalone tests \
+	test_legacy_exec test_krm_containerized test_krm_exec \
+	clean build_docker push_docker install install_plugin 

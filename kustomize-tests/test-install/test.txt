@@ -1,3 +1,0 @@
-Once upon a time
-There was a text processing tool
-That could not include files.

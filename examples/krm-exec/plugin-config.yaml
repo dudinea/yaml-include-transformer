@@ -1,4 +1,3 @@
----
 # put this into a file in your kustomize directory
 # and add filename to the list of transformers in
 # the kustomize.yaml
@@ -6,3 +5,10 @@ apiVersion: kustomize-utils.dudinea.org/v1
 kind: YamlIncludeTransformer
 metadata:
   name: notImportantHere
+  annotations:
+    config.kubernetes.io/function: |
+      exec:
+        path: ./plugins/yaml-include-transformer         
+
+
+    
