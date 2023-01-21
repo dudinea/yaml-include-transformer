@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -15,8 +16,6 @@ import (
 	"github.com/dudinea/yaml-include-transformer/pkg/config"
 	"gopkg.in/yaml.v3"
 )
-
-var header = []byte("---\n")
 
 const TEXTFILE = "!textfile"
 const BASE64FILE = "!base64file"
@@ -31,21 +30,29 @@ func Transform(reader *os.File) {
 	var err error = nil
 
 	decoder := yaml.NewDecoder(reader)
-	var m interface{}
 
+	var m interface{}
+	var outBuf bytes.Buffer
+	encoder := yaml.NewEncoder(&outBuf)
+	encoder.SetIndent(2)
+	numfile := 0
 	for err == nil {
+		outBuf.Reset()
 		err = decoder.Decode(&m)
 		if nil == err {
+			log.Printf("decoded yaml: %v\n", m)
 			err = processAny(m)
 			if nil != err {
 				Errexit(5, "Failed to process data: %v", err.Error())
 			}
-			outBytes, err := yaml.Marshal(m)
+
+			err = encoder.Encode(m)
 			if nil != err {
 				Errexit(5, "Failed to convert to yaml: %v", err.Error())
 			}
-			writeBytes(&header)
+			outBytes := outBuf.Bytes()
 			writeBytes(&outBytes)
+			numfile++
 		}
 	}
 	if err != io.EOF {
