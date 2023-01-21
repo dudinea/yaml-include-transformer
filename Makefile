@@ -9,8 +9,10 @@ ARGOCD_SRC_REPO?=quay.io/argoproj/argocd
 ARGOCD_REPO?=quay.io/evgeni_doudine/argocd-yit
 ARGOCD_DOCKERTAG?=$(ARGOCD_REPO):$(ARGOCD_VER)_yit$(VERSION)
 
+LDFLAGS=-X main.version=$(VERSION) -X main.dockertag=$(DOCKERTAG)
+
 $(BINARY): $(wildcard pkg/**/*.go) main.go go.mod
-	go build -ldflags "-X main.version=$(VERSION)"
+	go build -ldflags "$(LDFLAGS)"
 
 build_docker: $(BINARY)
 	docker build -t $(DOCKERTAG) .
@@ -19,7 +21,7 @@ push_docker:
 	docker push $(DOCKERTAG) 
 
 install: $(BINARY)
-	go install -v -ldflags "-X main.version=$(VERSION)"
+	go install -v -ldflags "$(LDFLAGS)"
 
 install_plugin: $(BINARY)
 	./$(BINARY) -i

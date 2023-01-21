@@ -11,6 +11,7 @@ import (
 )
 
 var version string
+var dockertag string
 
 func main() {
 	err, conf := config.ReadArgs(os.Args[1:])
