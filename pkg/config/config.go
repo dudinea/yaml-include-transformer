@@ -46,8 +46,8 @@ func ReadArgs(args []string) (error, Config) {
 	fs.BoolVar(&conf.Abs, "abs", false, "Allow absolute file paths")
 	fs.BoolVar(&conf.Version, "v", false, "Print program version")
 	fs.BoolVar(&conf.Version, "version", false, "Print program version")
-	fs.BoolVar(&conf.Version, "d", false, "Print debug messages on stderr")
-	fs.BoolVar(&conf.Version, "debug", false, "Print debug messages on stderr")
+	fs.BoolVar(&conf.Debug, "d", false, "Print debug messages on stderr")
+	fs.BoolVar(&conf.Debug, "debug", false, "Print debug messages on stderr")
 	err := fs.Parse(args)
 	return err, conf
 }

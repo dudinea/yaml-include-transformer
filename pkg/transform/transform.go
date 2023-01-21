@@ -40,7 +40,9 @@ func Transform(reader *os.File) {
 		outBuf.Reset()
 		err = decoder.Decode(&m)
 		if nil == err {
-			log.Printf("decoded yaml: %v\n", m)
+			if Conf.Debug {
+				log.Printf("decoded yaml: %v\n", m)
+			}
 			err = processAny(m)
 			if nil != err {
 				Errexit(5, "Failed to process data: %v", err.Error())

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/dudinea/yaml-include-transformer/pkg/config"
@@ -16,6 +17,10 @@ func main() {
 	if nil != err {
 		os.Exit(1)
 	}
+	if conf.Debug {
+		log.Printf("run with args %v\n", os.Args)
+	}
+
 	if conf.Version {
 		fmt.Println(version)
 		os.Exit(0)
@@ -38,8 +43,14 @@ func main() {
 	}
 	var reader *os.File
 	if conf.File == "" {
+		if conf.Debug {
+			log.Println("using stdin as input")
+		}
 		reader = os.Stdin
 	} else {
+		if conf.Debug {
+			log.Printf("using '%s' as input", conf.File)
+		}
 		reader, err = os.Open(conf.File)
 		defer reader.Close()
 		if nil != err {
