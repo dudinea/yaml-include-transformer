@@ -287,9 +287,9 @@ configmap/argocd-cm patched
 ### Using Exec KRM function
 
 In this mode the binary must be installed inside the repository as
-described [above](#Using Exec KRM function).  One is also required to
-change the `kustomize.buildOptions` value in the `argocd-cm`
-ConfigMap:
+described [above](#installation-as-an-exec-krm-function).  One is also
+required to change the `kustomize.buildOptions` value in the
+`argocd-cm` ConfigMap:
 
 ```shell
 $ make argo_patch_krm_exec
