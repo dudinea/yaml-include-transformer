@@ -10,7 +10,7 @@ if [ -d "$PLUGINDIR" ]; then
 fi
 
 echo "testing installation"
-"$BINARY" -i --krm  2>&1 | grep "No need to install binary when using containerized KRM plugin" >/dev/null
+"$BINARY" -i --krm  2>&1 | grep  "There is no need to install the binary when using a containerized KRM plugin." 
 
 echo "testing plugin config generation"
 "$BINARY" --plugin-conf --krm > plugin-config.yaml.test

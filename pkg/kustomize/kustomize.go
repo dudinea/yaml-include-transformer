@@ -18,7 +18,7 @@ func getPluginDir() (string, error) {
 	} else if transform.Conf.Exec {
 		return getPluginDirKrm()
 	} else {
-		return "", fmt.Errorf("No need to install binary when using containerized KRM plugin")
+		return "", fmt.Errorf("There is no need to install the binary when using a containerized KRM plugin.")
 	}
 }
 

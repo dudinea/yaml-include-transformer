@@ -23,7 +23,7 @@ if ! [ -x $KRMPLUGIN  ]; then
 fi
 
 echo "testing yaml processing"
-kustomize-v4.5.7 build --enable-alpha-plugins --enable-exec  > example.out.test
+kustomize build --enable-alpha-plugins --enable-exec  > example.out.test
 diff -u example.out.test example.out
 
 rm -f example.out.test plugin-config.yaml.test

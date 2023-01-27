@@ -55,12 +55,16 @@ argo_docker_build: $(BINARY)
 argo_docker_push: argo_docker_build
 	docker push $(ARGOCD_DOCKERTAG)
 
-argo_patch:
+argo_patch_legacy_exec:
 	kubectl patch deployment -n  $(ARGOCD_NS) argocd-repo-server -p \
 	'{"spec" : {"template" : { "spec" : { "containers" : [ { "image" : "$(ARGOCD_DOCKERTAG)", "name" : "argocd-repo-server"  }]}}}}'
-	kubectl patch cm -n $(ARGOCD_NS) argocd-cm -p '{"data" : {"kustomize.buildOptions" : "--enable-exec --enable-alpha-plugins"}}'
+	kubectl patch cm -n $(ARGOCD_NS) argocd-cm -p '{"data" : {"kustomize.buildOptions" : "--enable-alpha-plugins"}}'
 
-.PHONY: argo_patch argo_docker_push argo_docker_build test_install \
+argo_patch_krm_exec:
+	kubectl patch cm -n $(ARGOCD_NS) argocd-cm -p '{"data" : {"kustomize.buildOptions" : "--enable-alpha-plugins --enable-exec"}}'
+
+
+.PHONY: argo_patch_legacy_exec argo_docker_push argo_docker_build test_install argo_patch_krm_exec\
 	kustomize_tests test_standalone tests \
 	test_legacy_exec test_krm_containerized test_krm_exec \
 	clean build_docker push_docker install install_plugin 
