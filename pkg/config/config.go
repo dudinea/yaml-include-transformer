@@ -22,6 +22,8 @@ type Config struct {
 	Dockertag   string
 }
 
+var Conf *Config
+
 const Progname = "YamlIncludeTransformer"
 const ApiVersion = "kustomize-utils.dudinea.org/v1"
 

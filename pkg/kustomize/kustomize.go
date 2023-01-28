@@ -9,13 +9,12 @@ import (
 	"strings"
 
 	"github.com/dudinea/yaml-include-transformer/pkg/config"
-	"github.com/dudinea/yaml-include-transformer/pkg/transform"
 )
 
 func getPluginDir() (string, error) {
-	if transform.Conf.Legacy {
+	if config.Conf.Legacy {
 		return getPluginDirLegacy()
-	} else if transform.Conf.Exec {
+	} else if config.Conf.Exec {
 		return getPluginDirKrm()
 	} else {
 		return "", fmt.Errorf("There is no need to install the binary when using a containerized KRM plugin.")
@@ -109,9 +108,9 @@ metadata:
 `,
 		config.ApiVersion, config.Progname)
 	// FIXME: ugly - go templates? deserialize?
-	if transform.Conf.Krm {
+	if config.Conf.Krm {
 		fmt.Printf("  annotations:\n")
-		if transform.Conf.Exec {
+		if config.Conf.Exec {
 			fmt.Printf(`    config.kubernetes.io/function: |
       exec:
         path: ./plugins/%s
@@ -120,7 +119,7 @@ metadata:
 			fmt.Printf(`    config.kubernetes.io/function: |
       container:
         image: %s
-`, transform.Conf.Dockertag)
+`, config.Conf.Dockertag)
 		}
 
 	}

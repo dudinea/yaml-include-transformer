@@ -43,7 +43,7 @@ func main() {
 	if conf.Legacy {
 		conf.Exec = true
 	}
-	transform.Conf = &conf
+	config.Conf = &conf
 
 	if conf.ExecInstall {
 		err = kustomize.PluginInstall()

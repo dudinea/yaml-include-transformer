@@ -24,8 +24,6 @@ const YAMLFILE = "!yamlfile"
 
 var DIRECTIVES [4]string = [4]string{TEXTFILE, BASE64FILE, JSONFILE, YAMLFILE}
 
-var Conf *config.Config
-
 func Transform(reader *os.File) {
 	var err error = nil
 
@@ -40,7 +38,7 @@ func Transform(reader *os.File) {
 		outBuf.Reset()
 		err = decoder.Decode(&m)
 		if nil == err {
-			if Conf.Debug {
+			if config.Conf.Debug {
 				log.Printf("decoded yaml: %v\n", m)
 			}
 			err = processAny(m)
@@ -158,14 +156,14 @@ func resolveAndCheckLinks(path string) string {
 	}
 	// test if not equal to original
 	// (EvalSymLinks calls Clean() before return)
-	if !Conf.Links && resolved != filepath.Clean(path) {
+	if !config.Conf.Links && resolved != filepath.Clean(path) {
 		Errexit(6, "Error: path '%s' contains symlinks", path)
 	}
 	return resolved
 }
 
 func checkAbsPath(path string) {
-	if !Conf.Abs {
+	if !config.Conf.Abs {
 		if filepath.IsAbs(path) {
 			Errexit(6, "Error: absolute file path '%s' is not allowed", path)
 		}
@@ -173,7 +171,7 @@ func checkAbsPath(path string) {
 }
 
 func checkUpDir(path string) {
-	if !Conf.Updir {
+	if !config.Conf.Updir {
 		platformPath := filepath.FromSlash(path)
 		parts := strings.Split(platformPath, string(os.PathSeparator))
 		for _, v := range parts {
