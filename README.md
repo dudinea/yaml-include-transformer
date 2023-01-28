@@ -3,7 +3,7 @@ YAML Include Transformer
 
 A simple YAML processor that implements include directives for YAML
 files. It can be used as a standalone utility as well as a plugin for
-[Kustomize](https://kustomize.io).
+[Kustomize](https://kustomize.io) and with [ArgoCD](https://argoproj.github.io).
 
 Standalone Usage
 ----------------
@@ -50,6 +50,37 @@ metadata:
     name: demo-cm
 ```
 
+Command Line Arguments Reference
+--------------------------------
+
+Usage: 
+
+```
+yaml-include-transformer [configfile] [options ...]
+```
+Options:
+* `-h --help`	           Print this usage message
+* `-i --install`           Install as kustomize exec plugin
+* `-p --plugin-conf`       Print kustomize plugin configuration file
+* `-E --exec`              Exec plugin (for -p and -i)
+* `-L --legacy`            Legacy  plugin (for -p and -i), default
+* `-K --krm`               KRM-function plugin (for -p and -i)
+* `-D --dockertag`         KRM-function docker tag
+* `-f --file file.yaml ..` Specify Input files
+* `-u --up-dir`            Allow specifying .. in file paths
+* `-l --links`             Allow following symlinks in file paths
+* `-a --abs`               Allow absolute paths in file paths
+* `-v --version`           Print program version
+* `-d --debug`             Print debug messages on stderr
+
+Supported Include directives
+----------------------------
+
+* `foo!textfile: file.txt`    include `file.txt` as a text field.
+* `foo!base64file: file.bin`  include `file.bin` as base64 text.
+* `foo!jsonfile: file.json`   deserialize `file.json` and include it as data structure.
+* `foo!yamlfile: file.yaml`   deserialize `file.yaml` and include it as data structure.
+
 Usage as Kustomize Plugin
 -------------------------
 
@@ -61,7 +92,14 @@ multi-document as their standard input, transform it in some way, and print it o
 The Kustomize plugins are currently in alpha. There are several
 different ways to run them, some of which are deprecated.
 
-### Installation as legacy "EXEC" plugin
+## Plugin Configuration File
+
+Accepting a configuration file as first program argument (legacy
+plugins) or in the ResourceList (KRM plugins) is required by the
+Kustomize plugin protocol. The configuration file is accepted, but
+currently it is not actually used.
+
+### Installation as legacy EXEC plugin
 
 A [legacy EXEC
 plugins](https://kubectl.docs.kubernetes.io/guides/extending_kustomize/exec_plugins/)
@@ -116,7 +154,6 @@ project directory:
 
 ```shell
 $ yaml-include-transformer --install --krm --exec
-
 ```
 
 Create plugin configuration file in the project directory
@@ -178,44 +215,6 @@ project directory into the plugin container.
 See an example in the `examples/krm-containerized` subdirectory.
 
 
-Command Line Arguments Reference
---------------------------------
-
-Usage: 
-
-```
-yaml-include-transformer [configfile] [options ...]
-```
-Options:
-* `-h --help`	        Print this usage message
-* `-i --install`        Install as kustomize exec plugin
-* `-p --plugin-conf`    Print kustomize plugin configuration file
-* `-E --exec`           Exec plugin (for -p and -i)
-* `-L --legacy`         Legacy  plugin (for -p and -i), default
-* `-K --krm`            KRM-function plugin (for -p and -i)
-* `-D --dockertag`      KRM-function docker tag
-* `-f --file file.yaml` Input file
-* `-u --up-dir`         Allow specifying .. in file paths
-* `-l --links`          Allow following symlinks in file paths
-* `-a --abs`            Allow absolute paths in file paths
-* `-v --version`        Print program version
-* `-d --debug`          Print debug messages on stderr
-
-Supported Include directives
-----------------------------
-
-* `foo!textfile: file.txt`    include `file.txt` as a text field.
-* `foo!base64file: file.bin`  include `file.bin` as base64 text.
-* `foo!jsonfile: file.json`   deserialize `file.json` and include it as data structure.
-* `foo!yamlfile: file.yaml`   deserialize `file.yaml` and include it as data structure.
-
-Plugin Configuration File
--------------------------
-
-Accepting configuration file as first program argument (legacy
-plugins) or in the ResourceList is required by the Kustomize plugin
-protocol. The configuration file is accepted, but currently it is not
-actually used.
 
 Configuring ArgoCD to use Kustomize with the plugin 
 ---------------------------------------------------
@@ -229,7 +228,7 @@ enabling it on your ArgoCD instance may effectively allow anyone with
 commit access to the Git repositories to run their code inside your
 `argocd-repo-server` pod.
 
-### Using legacy "EXEC" plugin
+### Using Kustomize legacy EXEC plugin
 
 The `argocd-repo-server` deployment must be customized to to use a
 customized docker image that includes the `yaml-include-transformet` binary.
@@ -283,7 +282,6 @@ kubectl patch cm -n argocd argocd-cm -p '{"data" : {"kustomize.buildOptions" : "
 configmap/argocd-cm patched
 ```
 
-
 ### Using Exec KRM function
 
 In this mode the binary must be installed inside the repository as
@@ -296,6 +294,40 @@ $ make argo_patch_krm_exec
 kubectl patch cm -n argocd argocd-cm -p '{"data" : {"kustomize.buildOptions" : "--enable-alpha-plugins --enable-exec"}}'
 configmap/argocd-cm patched
 ```
+
+### Using as an ArgoCD CM plugin
+
+One can also use `yaml-include-transformer` as an ArgoCD Configuration
+Management Plugin (CMP) without using kustomize. 
+
+There are two ways to set-up CM plugins: using the `argocd-cm` ConfigMap
+and using sidecars.
+
+#### Setting up using `argocd-cm`
+
+1. One need to make the binary available in the `argocd-repo-server` container 
+   as described [above](#using-kustomize-legacy-EXEC-plugin). 
+
+2. Configure plugin in the `argocd-cm` ConfigMap:
+
+```shell
+$ make argo_patch_cmp_cm
+[TODO]
+```
+
+3. Configure your Application to use the plugin:
+
+```
+spec:
+  source:
+    plugin:
+      name: YamlIncludeTransformer
+```
+
+#### Setting up using sidecar
+
+[TO-BE-DONE]
+
 
 Using `kubectl` with the plugin
 -------------------------------
