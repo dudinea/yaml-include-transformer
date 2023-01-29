@@ -58,22 +58,19 @@ func main() {
 		kustomize.PluginConf()
 		os.Exit(0)
 	}
-	var reader *os.File
-	if conf.File == "" {
+
+	if len(conf.Files) == 0 {
 		if conf.Debug {
 			log.Println("using stdin as input")
 		}
-		reader = os.Stdin
+		reader := os.Stdin
+		transform.Transform(reader)
 	} else {
-		if conf.Debug {
-			log.Printf("using '%s' as input", conf.File)
-		}
-		reader, err = os.Open(conf.File)
-		defer reader.Close()
-		if nil != err {
-			transform.Errexit(5, "Failed to open input: %v", err)
+		for idx := 0; idx < len(conf.Files); idx++ {
+			if idx > 0 {
+				fmt.Fprintln(os.Stdout, "---")
+			}
+			transform.TransformFile(conf.Files[idx])
 		}
 	}
-
-	transform.Transform(reader)
 }

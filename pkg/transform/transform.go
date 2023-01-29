@@ -60,6 +60,18 @@ func Transform(reader *os.File) {
 	}
 }
 
+func TransformFile(filePath string) {
+	if config.Conf.Debug {
+		log.Printf("using '%s' as input", filePath)
+	}
+	reader, err := os.Open(filePath)
+	defer reader.Close()
+	if nil != err {
+		Errexit(5, "Failed to open input: %v", err)
+	}
+	Transform(reader)
+}
+
 // return include type and original key
 func isInclude(k string) (include_type string, new_key string) {
 	//fmt.Fprintf(os.Stderr, "%v: isInclude: %v\n", os.Args[0], k)

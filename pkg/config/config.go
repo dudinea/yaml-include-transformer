@@ -11,7 +11,7 @@ type Config struct {
 	PrintUsage  bool
 	ExecInstall bool
 	PluginConf  bool
-	File        string
+	Files       []string
 	Updir       bool
 	Links       bool
 	Abs         bool
@@ -20,6 +20,8 @@ type Config struct {
 	Krm         bool
 	Legacy      bool
 	Dockertag   string
+	Subdirs     bool
+	Pattern     string
 }
 
 var Conf *Config
@@ -29,14 +31,18 @@ const ApiVersion = "kustomize-utils.dudinea.org/v1"
 
 var Dockertag string
 
+const pattern = "^.*\\.ya?ml$"
+
 var UsageFunc func()
 
 func ReadArgs(args []string) (error, Config) {
 	conf := Config{}
+	rawNumArgs := len(args)
 	fs := flag.NewFlagSet(Progname, flag.ContinueOnError)
 	UsageFunc = func() {
 		fmt.Fprintf(os.Stderr, usagestr, os.Args[0])
 	}
+	var firstFile string
 	fs.Usage = UsageFunc
 	fs.BoolVar(&conf.PrintUsage, "help", false, "Print help message")
 	fs.BoolVar(&conf.PrintUsage, "h", false, "Print help message")
@@ -44,8 +50,9 @@ func ReadArgs(args []string) (error, Config) {
 	fs.BoolVar(&conf.ExecInstall, "i", false, "Install as kustomize exec plugin")
 	fs.BoolVar(&conf.PluginConf, "p", false, "Print kustomize plugin configuration")
 	fs.BoolVar(&conf.PluginConf, "plugin-conf", false, "Print kustomize plugin configuration")
-	fs.StringVar(&conf.File, "f", "", "Input file")
-	fs.StringVar(&conf.File, "file", "", "Input file")
+	fs.StringVar(&firstFile, "f", "", "Input file")
+	fs.StringVar(&firstFile, "file", "", "Input file")
+	fs.StringVar(&firstFile, "files", "", "Input files")
 	fs.BoolVar(&conf.Updir, "u", false, "Allow specifying .. in file paths")
 	fs.BoolVar(&conf.Updir, "updir", false, "Allow specifying .. in file paths")
 	fs.BoolVar(&conf.Links, "l", false, "Allow following symlinks in file paths")
@@ -62,9 +69,26 @@ func ReadArgs(args []string) (error, Config) {
 	fs.BoolVar(&conf.Krm, "krm", false, "KRM-function style plugin")
 	fs.BoolVar(&conf.Legacy, "L", false, "Legacy style plugin")
 	fs.BoolVar(&conf.Legacy, "legacy", false, "Legacy style plugin")
+	fs.BoolVar(&conf.Subdirs, "subdirs", false, "Descend subdirectories")
+	fs.BoolVar(&conf.Subdirs, "s", false, "Descend subdirectories")
 	fs.StringVar(&conf.Dockertag, "dockertag", Dockertag, "Docker tag of the KRM function")
 	fs.StringVar(&conf.Dockertag, "D", Dockertag, "Docker tag of the KRM function")
+	fs.StringVar(&conf.Pattern, "pattern", pattern, "Filename pattern for input files")
+	fs.StringVar(&conf.Pattern, "p", pattern, "Filename pattern for input files")
 	err := fs.Parse(args)
+	restArgs := fs.NArg()
+	if nil == err && restArgs == 1 && rawNumArgs == 1 {
+		// no options has been parsed && one argument
+		// => arg is config file (legacy exec plugijn), which is ignored
+		return err, conf
+	}
+	if firstFile != "" {
+		// we got -f
+		conf.Files = append(conf.Files, firstFile)
+		for idx := 0; idx < restArgs; idx++ {
+			conf.Files = append(conf.Files, fs.Arg(idx))
+		}
+	}
 	return err, conf
 }
 
@@ -79,7 +103,7 @@ const descstr = "A Simple Include Transformer for YAML files --\n" +
 	"https://github.com/dudinea/yaml-include-transformer"
 
 const usagestr = "\nUsage: \n" +
-	"  %s [configfile] [options ...]\n" +
+	"  %s configfile | [options ...]\n" +
 	"\n" +
 	"Options:\n" +
 	"  -h --help	       Print this usage message\n" +
@@ -93,6 +117,8 @@ const usagestr = "\nUsage: \n" +
 	"  -u --up-dir         Allow specifying .. in file paths\n" +
 	"  -l --links          Allow following symlinks in file paths\n" +
 	"  -a --abs            Allow absolute paths in file paths\n" +
+	"  -s --subdirs        Descend subdirectories\n" +
+	"  -p --pattern        Input filename pattern (default is " + pattern + ")\n" +
 	"  -v --version        Print program version\n" +
 	"  -d --debug          Print debug messages on stderr\n" +
 	"\n" +

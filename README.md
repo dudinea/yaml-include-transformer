@@ -56,7 +56,7 @@ Command Line Arguments Reference
 Usage: 
 
 ```
-yaml-include-transformer [configfile] [options ...]
+yaml-include-transformer [configfile] | [options ...]
 ```
 Options:
 * `-h --help`	           Print this usage message
@@ -97,7 +97,9 @@ different ways to run them, some of which are deprecated.
 Accepting a configuration file as first program argument (legacy
 plugins) or in the ResourceList (KRM plugins) is required by the
 Kustomize plugin protocol. The configuration file is accepted, but
-currently it is not actually used.
+currently it is not actually used. Note, that if
+`yaml-include-transformer` is run with single argument and that
+argument is not an option it is regarded as a configuration file.
 
 ### Installation as legacy EXEC plugin
 
@@ -331,7 +333,6 @@ spec:
 
 Using `kubectl` with the plugin
 -------------------------------
-
 
 Run kustomize, which is built into kubectl.
 
