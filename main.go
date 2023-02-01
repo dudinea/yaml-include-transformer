@@ -18,7 +18,7 @@ func main() {
 	config.Dockertag = dockertag
 	err, conf := config.ReadArgs(os.Args[1:])
 	if nil != err {
-		os.Exit(1)
+		transform.Errexit(1, "Invalid command line arguments: %v", err)
 	}
 	if conf.Debug {
 		log.Printf("run with args %v\n", os.Args)
@@ -70,7 +70,7 @@ func main() {
 			if idx > 0 {
 				fmt.Fprintln(os.Stdout, "---")
 			}
-			transform.TransformFile(conf.Files[idx])
+			transform.TransformFileOrDir(conf.Files[idx], true)
 		}
 	}
 }
