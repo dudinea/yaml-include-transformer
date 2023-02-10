@@ -70,7 +70,7 @@ func main() {
 			if idx > 0 {
 				fmt.Fprintln(os.Stdout, "---")
 			}
-			transform.TransformFileOrDir(conf.Files[idx], true)
+			transform.TransformFileOrDir(conf.Files[idx])
 		}
 	}
 }

@@ -3,7 +3,7 @@ YAML Include Transformer
 
 A simple YAML processor that implements include directives for YAML
 files. It can be used as a standalone utility as well as a plugin for
-[Kustomize](https://kustomize.io) and with [ArgoCD](https://argoproj.github.io).
+[Kustomize](https://kustomize.io) or [ArgoCD](https://argoproj.github.io).
 
 Standalone Usage
 ----------------
@@ -70,6 +70,8 @@ Options:
 * `-u --up-dir`            Allow specifying .. in file paths
 * `-l --links`             Allow following symlinks in file paths
 * `-a --abs`               Allow absolute paths in file paths
+* `-s --subdirs`           Descend subdirectories
+*  -P --pattern            Input filename pattern (default is ^.*\.ya?ml$)
 * `-v --version`           Print program version
 * `-d --debug`             Print debug messages on stderr
 
@@ -78,28 +80,29 @@ Supported Include directives
 
 * `foo!textfile: file.txt`    include `file.txt` as a text field.
 * `foo!base64file: file.bin`  include `file.bin` as base64 text.
-* `foo!jsonfile: file.json`   deserialize `file.json` and include it as data structure.
-* `foo!yamlfile: file.yaml`   deserialize `file.yaml` and include it as data structure.
+* `foo!jsonfile: file.json`   deserialize `file.json` and include it as a data structure.
+* `foo!yamlfile: file.yaml`   deserialize `file.yaml` and include it as a data structure.
 
 Usage as Kustomize Plugin
 -------------------------
 
 [Kustomize](https://kustomize.io) offers a plugin framework that
-allows to add user defined transformers that make changes to existing
-Kubernetes objects. Generally speaking, transformers get YAML
-multi-document as their standard input, transform it in some way, and print it on their standard output.
+allows to add user-defined transformers that make changes to existing
+Kubernetes objects. Transformers get YAML multi-document as their
+standard input, transform it in some way, and print it on their
+standard output.
 
-The Kustomize plugins are currently in alpha. There are several
-different ways to run them, some of which are deprecated.
+The Kustomize plugins functionality is currently in alpha. There are
+several different ways to run plugins, some of which are deprecated.
 
 ## Plugin Configuration File
 
 Accepting a configuration file as first program argument (legacy
 plugins) or in the ResourceList (KRM plugins) is required by the
 Kustomize plugin protocol. The configuration file is accepted, but
-currently it is not actually used. Note, that if
-`yaml-include-transformer` is run with single argument and that
-argument is not an option it is regarded as a configuration file.
+currently it is not actually used. If `yaml-include-transformer` is
+run with a single argument and that argument is not an option it is
+regarded as a configuration file.
 
 ### Installation as legacy EXEC plugin
 

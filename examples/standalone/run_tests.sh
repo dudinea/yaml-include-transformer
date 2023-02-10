@@ -24,5 +24,9 @@ echo testing multiple input files
 "${BINARY}" -f example-multidoc.yaml example.yaml  > example-multiple.out.test
 diff -u example-multiple.out.test example-multiple.out
 
-rm -f example.out.test example-multidoc.out.test example-multiple.out.test
+echo testing directory as input
+"${BINARY}" -P  '^example.*\.yaml$' -d -f .  > example-dir.out.test
+diff -u example-dir.out.test example-dir.out
+
+rm -f example.out.test example-multidoc.out.test example-multiple.out.test example-dir.out.test
 echo "OK"

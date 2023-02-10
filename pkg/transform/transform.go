@@ -24,6 +24,8 @@ const YAMLFILE = "!yamlfile"
 
 var DIRECTIVES [4]string = [4]string{TEXTFILE, BASE64FILE, JSONFILE, YAMLFILE}
 
+var outcount uint64 = 0
+
 func Transform(reader *os.File) {
 	var err error = nil
 
@@ -70,6 +72,62 @@ func TransformFile(filePath string) {
 		Errexit(5, "Failed to open input: %v", err)
 	}
 	Transform(reader)
+}
+
+func TransformFileOrDir(filePath string) {
+	fileInfo, err := os.Stat(filePath)
+	if nil != err {
+		Errexit(5, "Failed to stat input file: %v", err)
+	}
+	if fileInfo.IsDir() {
+		TransformDir(filePath)
+	} else {
+		TransformFile(filePath)
+	}
+}
+
+func TransformDir(filePath string) {
+	if config.Conf.Debug {
+		log.Printf("reading directory '%s'", filePath)
+	}
+	file, err := os.Open(filePath)
+	defer file.Close()
+	if nil != err {
+		Errexit(5, "Failed to open directory: %v", err)
+	}
+	dirEntries, err := file.ReadDir(-1)
+	if nil != err {
+		Errexit(5, "Failed to read directory '%s': %v", filePath, err)
+	}
+	dirLen := len(dirEntries)
+	//sort.Slice(dirEntries, func(i, j int) bool {
+	//	return dirEntries[i].Name() < dirEntries[j].Name()
+	//})
+	for idx := 0; idx < dirLen; idx++ {
+		name := dirEntries[idx].Name()
+		entryPath := filePath + string(os.PathSeparator) + name
+		fileInfo, err := os.Stat(entryPath)
+		if nil != err {
+			Errexit(5, "Failed to stat input file: %v", err)
+		}
+		if fileInfo.IsDir() {
+			if config.Conf.Subdirs {
+				TransformDir(entryPath)
+			}
+		} else {
+			if config.FileRegexp != nil &&
+				!config.FileRegexp.MatchString(name) {
+				if config.Conf.Debug {
+					log.Printf("skip not-matched file '%s'", entryPath)
+				}
+				continue
+			}
+			TransformFile(entryPath)
+		}
+	}
+	if config.Conf.Debug {
+		log.Printf("finished directory '%s'", filePath)
+	}
 }
 
 // return include type and original key

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"regexp"
 )
 
 type Config struct {
@@ -31,8 +32,9 @@ const ApiVersion = "kustomize-utils.dudinea.org/v1"
 
 var Dockertag string
 
-const pattern = "^.*\\.ya?ml$"
+const defPattern = "^.*\\.ya?ml$"
 
+var FileRegexp *regexp.Regexp
 var UsageFunc func()
 
 func ReadArgs(args []string) (error, Config) {
@@ -73,8 +75,8 @@ func ReadArgs(args []string) (error, Config) {
 	fs.BoolVar(&conf.Subdirs, "s", false, "Descend subdirectories")
 	fs.StringVar(&conf.Dockertag, "dockertag", Dockertag, "Docker tag of the KRM function")
 	fs.StringVar(&conf.Dockertag, "D", Dockertag, "Docker tag of the KRM function")
-	fs.StringVar(&conf.Pattern, "pattern", pattern, "Filename pattern for input files")
-	fs.StringVar(&conf.Pattern, "p", pattern, "Filename pattern for input files")
+	fs.StringVar(&conf.Pattern, "pattern", defPattern, "Filename pattern for input files")
+	fs.StringVar(&conf.Pattern, "P", defPattern, "Filename pattern for input files")
 	err := fs.Parse(args)
 	restArgs := fs.NArg()
 	if nil == err && restArgs == 1 && rawNumArgs == 1 {
@@ -88,6 +90,15 @@ func ReadArgs(args []string) (error, Config) {
 		for idx := 0; idx < restArgs; idx++ {
 			conf.Files = append(conf.Files, fs.Arg(idx))
 		}
+	}
+	if conf.Pattern != "" {
+		FileRegexp, err = regexp.Compile(conf.Pattern)
+		if err != nil {
+			return err, conf
+		}
+
+	} else {
+		FileRegexp = nil
 	}
 	return err, conf
 }
@@ -103,10 +114,10 @@ const descstr = "A Simple Include Transformer for YAML files --\n" +
 	"https://github.com/dudinea/yaml-include-transformer"
 
 const usagestr = "\nUsage: \n" +
-	"  %s configfile | [options ...]\n" +
+	"  %s [configfile] | [options ...]\n" +
 	"\n" +
 	"Options:\n" +
-	"  -h --help	       Print this usage message\n" +
+	"  -h --help           Print this usage message\n" +
 	"  -i --install        Install as kustomize exec plugin\n" +
 	"  -p --plugin-conf    Print kustomize plugin configuration file\n" +
 	"  -E --exec           Exec plugin (for -p and -i)\n" +
@@ -118,7 +129,7 @@ const usagestr = "\nUsage: \n" +
 	"  -l --links          Allow following symlinks in file paths\n" +
 	"  -a --abs            Allow absolute paths in file paths\n" +
 	"  -s --subdirs        Descend subdirectories\n" +
-	"  -p --pattern        Input filename pattern (default is " + pattern + ")\n" +
+	"  -P --pattern        Input filename pattern (default is " + defPattern + ")\n" +
 	"  -v --version        Print program version\n" +
 	"  -d --debug          Print debug messages on stderr\n" +
 	"\n" +
