@@ -22,13 +22,18 @@ func getPluginDir() (string, error) {
 }
 
 func getPluginDirLegacy() (string, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("Failed to get user's home directory: %v", err)
+	configDir := os.Getenv("XDG_CONFIG_HOME")
+	if configDir == "" {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return "", fmt.Errorf("Failed to get user's home directory: %v", err)
+		}
+		configDir = filepath.FromSlash(homeDir + "/.config")
 	}
-	return filepath.FromSlash(homeDir +
-		"/.config/kustomize/plugin/" + config.ApiVersion + "/" +
-		strings.ToLower(config.Progname)), nil
+
+	return configDir + "/kustomize/plugin/" +
+		config.ApiVersion + "/" +
+		strings.ToLower(config.Progname), nil
 }
 
 func getPluginDirKrm() (string, error) {
