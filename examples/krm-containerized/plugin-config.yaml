@@ -9,4 +9,4 @@ metadata:
   annotations:
     config.kubernetes.io/function: |
       container:
-        image: quay.io/evgeni_doudine/yaml-include-transformer:v0.0.4alpha1
+        image: quay.io/evgeni_doudine/yaml-include-transformer:v0.0.4alpha2

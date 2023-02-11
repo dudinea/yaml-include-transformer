@@ -88,12 +88,12 @@ Usage as Kustomize Plugin
 -------------------------
 
 [Kustomize](https://kustomize.io) offers a plugin framework that
-allows to add user-defined transformers that make changes to existing
-Kubernetes objects. Transformers get YAML multi-document as their
-standard input, transform it in some way, and print it on their
-standard output.
+allows to add user-defined transformers that make changes to the
+configured Kubernetes resources. Transformers get YAML multi-document
+as their standard input, transform it in some way, and print it on
+their standard output.
 
-The Kustomize plugins functionality is currently in alpha. There are
+The Kustomize plugins functionality is currently in Alpha. There are
 several different ways to run plugins, some of which are deprecated.
 
 ## Plugin Configuration File
@@ -102,7 +102,7 @@ Accepting a configuration file as first program argument (legacy
 plugins) or in the ResourceList (KRM plugins) is required by the
 Kustomize plugin protocol. The configuration file is accepted, but
 currently it is not actually used. If `yaml-include-transformer` is
-run with a single argument and that argument is not an option it is
+run with a single argument and that argument is not an option, it is
 regarded as a configuration file.
 
 ### Installation as legacy EXEC plugin
