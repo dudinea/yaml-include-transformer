@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"sort"
 	"strings"
 
 	"github.com/dudinea/yaml-include-transformer/pkg/config"
@@ -100,9 +101,9 @@ func TransformDir(filePath string) {
 		Errexit(5, "Failed to read directory '%s': %v", filePath, err)
 	}
 	dirLen := len(dirEntries)
-	//sort.Slice(dirEntries, func(i, j int) bool {
-	//	return dirEntries[i].Name() < dirEntries[j].Name()
-	//})
+	sort.Slice(dirEntries, func(i, j int) bool {
+		return dirEntries[i].Name() < dirEntries[j].Name()
+	})
 	for idx := 0; idx < dirLen; idx++ {
 		name := dirEntries[idx].Name()
 		entryPath := filePath + string(os.PathSeparator) + name
