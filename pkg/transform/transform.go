@@ -116,8 +116,7 @@ func TransformDir(filePath string) {
 				TransformDir(entryPath)
 			}
 		} else {
-			if config.FileRegexp != nil &&
-				!config.FileRegexp.MatchString(name) {
+			if !isFilenameMatch(name) {
 				if config.Conf.Debug {
 					log.Printf("skip not-matched file '%s'", entryPath)
 				}
@@ -129,6 +128,20 @@ func TransformDir(filePath string) {
 	if config.Conf.Debug {
 		log.Printf("finished directory '%s'", filePath)
 	}
+}
+
+func isFilenameMatch(filename string) bool {
+	if config.Conf.Glob != "" {
+		result, err := filepath.Match(config.Conf.Glob, filename)
+		if nil != err {
+			Errexit(1, "Cannot perform glob matching: %v", err.Error())
+		}
+		return result
+	}
+	if config.FileRegexp != nil {
+		return config.FileRegexp.MatchString(filename)
+	}
+	return true
 }
 
 // return include type and original key

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 )
 
@@ -23,6 +24,7 @@ type Config struct {
 	Dockertag   string
 	Subdirs     bool
 	Pattern     string
+	Glob        string
 }
 
 var Conf *Config
@@ -75,8 +77,10 @@ func ReadArgs(args []string) (error, Config) {
 	fs.BoolVar(&conf.Subdirs, "s", false, "Descend subdirectories")
 	fs.StringVar(&conf.Dockertag, "dockertag", Dockertag, "Docker tag of the KRM function")
 	fs.StringVar(&conf.Dockertag, "D", Dockertag, "Docker tag of the KRM function")
-	fs.StringVar(&conf.Pattern, "pattern", defPattern, "Filename pattern for input files")
-	fs.StringVar(&conf.Pattern, "P", defPattern, "Filename pattern for input files")
+	fs.StringVar(&conf.Glob, "glob", "", "Filename glob pattern for input files")
+	fs.StringVar(&conf.Glob, "G", "", "Filename glob pattern for input files")
+	fs.StringVar(&conf.Pattern, "pattern", "", "Filename pattern for input files")
+	fs.StringVar(&conf.Pattern, "P", "", "Filename pattern for input files")
 	err := fs.Parse(args)
 	restArgs := fs.NArg()
 	if nil == err && restArgs == 1 && rawNumArgs == 1 {
@@ -91,14 +95,22 @@ func ReadArgs(args []string) (error, Config) {
 			conf.Files = append(conf.Files, fs.Arg(idx))
 		}
 	}
-	if conf.Pattern != "" {
+	if conf.Pattern != "" && conf.Glob != "" {
+		return fmt.Errorf("Cannot set Glob and Regex patterns at the same time"), conf
+	} else if conf.Glob != "" {
+		// check if it is valid
+		_, err = filepath.Match(conf.Glob, "a.yaml")
+		if err != nil {
+			return err, conf
+		}
+	} else {
+		if conf.Pattern == "" {
+			conf.Pattern = defPattern
+		}
 		FileRegexp, err = regexp.Compile(conf.Pattern)
 		if err != nil {
 			return err, conf
 		}
-
-	} else {
-		FileRegexp = nil
 	}
 	return err, conf
 }
@@ -130,6 +142,7 @@ const usagestr = "\nUsage: \n" +
 	"  -a --abs            Allow absolute paths in file paths\n" +
 	"  -s --subdirs        Descend subdirectories\n" +
 	"  -P --pattern        Input filename pattern (default is " + defPattern + ")\n" +
+	"  -G --glob           Input filename glob pattern\n" +
 	"  -v --version        Print program version\n" +
 	"  -d --debug          Print debug messages on stderr\n" +
 	"\n" +

@@ -28,6 +28,10 @@ echo testing directory as input
 "${BINARY}" -P  '^example.*\.yaml$' -f .  > example-dir.out.test
 diff -u example-dir.out.test example-dir.out
 
+echo "testing directory as input (with Glob)"
+"${BINARY}" -G  'example*.yaml' -f .  > example-dir.out.test
+diff -u example-dir.out.test example-dir.out
+
 echo "testing directory as input (recursively)"
 "${BINARY}" -s -P  '^example.*\.yaml$' -f .  > example-dir-recursive.out.test
 diff -u example-dir-recursive.out.test example-dir-recursive.out

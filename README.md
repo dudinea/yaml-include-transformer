@@ -71,7 +71,8 @@ Options:
 * `-l --links`             Allow following symlinks in file paths
 * `-a --abs`               Allow absolute paths in file paths
 * `-s --subdirs`           Descend subdirectories
-*  -P --pattern            Input filename pattern (default is ^.*\.ya?ml$)
+*  -P --pattern            Input filename regex pattern (default is ^.*\.ya?ml$)
+*  -G --glob               Input filename glob pattern
 * `-v --version`           Print program version
 * `-d --debug`             Print debug messages on stderr
 
