@@ -1,12 +1,12 @@
 BINARY=yaml-include-transformer
 VERSION?=$(shell cat .version)
-REPO?=quay.io/evgeni_doudine/yaml-include-transformer
+REPO?=quay.io/yaml_include_transformer/yaml-include-transformer
 DOCKERTAG?=$(REPO):$(VERSION)
 
 ARGOCD_VER?=v2.4.4
 ARGOCD_NS?=argocd
 ARGOCD_SRC_REPO?=quay.io/argoproj/argocd
-ARGOCD_REPO?=quay.io/evgeni_doudine/argocd-yit
+ARGOCD_REPO?=quay.io/yaml_include_transformer/argocd-yit
 ARGOCD_DOCKERTAG?=$(ARGOCD_REPO):$(ARGOCD_VER)_yit$(VERSION)
 
 LDFLAGS=-X main.version=$(VERSION) -X main.dockertag=$(DOCKERTAG)

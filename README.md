@@ -198,8 +198,9 @@ create plugin configuration file in the project directory
 $ yaml-include-transformer --plugin-conf --krm > include-plugin.yaml
 ```
 
-The plugin configuration contains image tag for the `yaml-include-transformer`
-container image ``. 
+The plugin configuration contains image tag for the
+`yaml-include-transformer` container image. The tag may be customized
+using the `-D` (`--dockertag`) command line argument.
 
 
 Add a transformer declaration to the `kustomization.yaml` file:
@@ -219,7 +220,6 @@ This plugin needs to access the project directory so this command mounts the
 project directory into the plugin container.
 
 See an example in the `examples/krm-containerized` subdirectory.
-
 
 
 Configuring ArgoCD to use Kustomize with the plugin 
@@ -279,9 +279,9 @@ image.  The following command patches the deployment of
 `argocd-repo-server` to use the customized docker image:
 
 ```shell
- $ make argo_patch_image
+ $ env ARGOCD_REPO=some-repo/argocd-yit ARGOCD_VER=v2.4.4 make argo_patch_image
 kubectl patch deployment -n  argocd argocd-repo-server -p \
-'{"spec" : {"template" : { "spec" : { "containers" : [ { "image" : "quay.io/evgeni_doudine/argocd-yit:v2.4.4_yitv0.0.4alpha2", "name" : "argocd-repo-server"  }]}}}}'
+'{"spec" : {"template" : { "spec" : { "containers" : [ { "image" : "some-repo/argocd-yit:v2.4.4_yitv0.0.4alpha1", "name" : "argocd-repo-server"  }]}}}}'
 deployment.apps/argocd-repo-server patched
 ```
 
