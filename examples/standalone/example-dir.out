@@ -19,7 +19,7 @@ data:
 kind: Secret
 metadata:
   name: demo-multi-secret
----  
+---
 apiVersion: v1
 data:
   code: |

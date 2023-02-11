@@ -24,17 +24,17 @@ const YAMLFILE = "!yamlfile"
 
 var DIRECTIVES [4]string = [4]string{TEXTFILE, BASE64FILE, JSONFILE, YAMLFILE}
 
-var outcount uint64 = 0
+var outBuf bytes.Buffer
+var encoder = yaml.NewEncoder(&outBuf)
+
+func Init() {
+	encoder.SetIndent(2)
+}
 
 func Transform(reader *os.File) {
 	var err error = nil
-
 	decoder := yaml.NewDecoder(reader)
-
 	var m interface{}
-	var outBuf bytes.Buffer
-	encoder := yaml.NewEncoder(&outBuf)
-	encoder.SetIndent(2)
 	numfile := 0
 	for err == nil {
 		outBuf.Reset()

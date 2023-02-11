@@ -58,7 +58,7 @@ func main() {
 		kustomize.PluginConf()
 		os.Exit(0)
 	}
-
+	transform.Init()
 	if len(conf.Files) == 0 {
 		if conf.Debug {
 			log.Println("using stdin as input")
@@ -67,9 +67,6 @@ func main() {
 		transform.Transform(reader)
 	} else {
 		for idx := 0; idx < len(conf.Files); idx++ {
-			if idx > 0 {
-				fmt.Fprintln(os.Stdout, "---")
-			}
 			transform.TransformFileOrDir(conf.Files[idx])
 		}
 	}
