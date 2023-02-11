@@ -59,13 +59,13 @@ argo_patch_image:
 	kubectl patch deployment -n  $(ARGOCD_NS) argocd-repo-server -p \
 	'{"spec" : {"template" : { "spec" : { "containers" : [ { "image" : "$(ARGOCD_DOCKERTAG)", "name" : "argocd-repo-server"  }]}}}}'
 
-argo_patch_legacy_exec: argo_patch_image
+argo_patch_legacy_exec:
 	kubectl patch cm -n $(ARGOCD_NS) argocd-cm -p '{"data" : {"kustomize.buildOptions" : "--enable-alpha-plugins"}}'
 
 argo_patch_krm_exec:
 	kubectl patch cm -n $(ARGOCD_NS) argocd-cm -p '{"data" : {"kustomize.buildOptions" : "--enable-alpha-plugins --enable-exec"}}'
 
-argo_patch_cmp_cm: argo_patch_image
+argo_patch_cmp_cm:
 	kubectl patch cm -n $(ARGOCD_NS) argocd-cm -p '{"data" : {"configManagementPlugins": "[ { \"name\":  \"YamlIncludeTransformer\", \"generate\": { \"command\" : [ \"/usr/local/bin/yaml-include-transformer\" ],  \"args\": [ \"-f\" , \".\" ]}}]"}}'
 
 

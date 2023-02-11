@@ -234,10 +234,11 @@ enabling it on your ArgoCD instance may effectively allow anyone with
 commit access to the Git repositories to run their code inside your
 `argocd-repo-server` pod.
 
-### Using Kustomize legacy EXEC plugin
+### Configuring ArgoCD to support Kustomize legacy EXEC plugin
 
 The `argocd-repo-server` deployment must be customized to to use a
 customized docker image that includes the `yaml-include-transformet` binary.
+
 One is also required  to change the `kustomize.buildOptions` 
 value in the `argocd-cm` ConfigMap. 
 
@@ -245,7 +246,7 @@ See more in the [ArgoCD
 documentation](https://argo-cd.readthedocs.io/en/stable/operator-manual/custom_tools)
 on inclusion of custom tools.
 
-#### Building a Customized ArgoCD Image
+#### Customizing the ArgoCD Image
 
 This command will add the `yaml-include-transformer` binary to the
 source ArgoCD docker image and installs it as a customize plugin.  You
@@ -272,6 +273,17 @@ Successfully tagged some-repo/argocd-yit:v2.4.4_yitv0.0.4alpha1
 ```
 
 `make argo_docker_push` will push the image to your repository.
+
+Then you need to change ArgoCD configuration to use the newly build
+image.  The following command patches the deployment of
+`argocd-repo-server` to use the customized docker image:
+
+```shell
+ $ make argo_patch_image
+kubectl patch deployment -n  argocd argocd-repo-server -p \
+'{"spec" : {"template" : { "spec" : { "containers" : [ { "image" : "quay.io/evgeni_doudine/argocd-yit:v2.4.4_yitv0.0.4alpha2", "name" : "argocd-repo-server"  }]}}}}'
+deployment.apps/argocd-repo-server patched
+```
 
 #### Patching the ArgoCD configuration
 
@@ -312,13 +324,14 @@ and using sidecars.
 #### Setting up using `argocd-cm`
 
 1. One need to make the binary available in the `argocd-repo-server` container 
-   as described [above](#using-kustomize-legacy-EXEC-plugin). 
+   as described [above](#customizing-the-argocd-image). 
 
 2. Configure plugin in the `argocd-cm` ConfigMap:
 
 ```shell
-$ make argo_patch_cmp_cm
-[TODO]
+ $ make argo_patch_cmp_cm
+kubectl patch cm -n argocd argocd-cm -p '{"data" : {"configManagementPlugins": "[ { \"name\":  \"YamlIncludeTransformer\", \"generate\": { \"command\" : [ \"/usr/local/bin/yaml-include-transformer\" ],  \"args\": [ \"-f\" , \".\" ]}}]"}}'
+configmap/argocd-cm patched
 ```
 
 3. Configure your Application to use the plugin:
