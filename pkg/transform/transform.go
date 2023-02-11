@@ -7,16 +7,16 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"reflect"
+	"sort"
 	"strings"
 
 	"github.com/dudinea/yaml-include-transformer/pkg/config"
 	"gopkg.in/yaml.v3"
 )
-
-var header = []byte("---\n")
 
 const TEXTFILE = "!textfile"
 const BASE64FILE = "!base64file"
@@ -25,32 +25,123 @@ const YAMLFILE = "!yamlfile"
 
 var DIRECTIVES [4]string = [4]string{TEXTFILE, BASE64FILE, JSONFILE, YAMLFILE}
 
-var Conf *config.Config
+var outBuf bytes.Buffer
+var encoder = yaml.NewEncoder(&outBuf)
+
+func Init() {
+	encoder.SetIndent(2)
+}
 
 func Transform(reader *os.File) {
 	var err error = nil
-
 	decoder := yaml.NewDecoder(reader)
 	var m interface{}
-
+	numfile := 0
 	for err == nil {
+		outBuf.Reset()
 		err = decoder.Decode(&m)
 		if nil == err {
+			if config.Conf.Debug {
+				log.Printf("decoded yaml: %v\n", m)
+			}
 			err = processAny(m)
 			if nil != err {
 				Errexit(5, "Failed to process data: %v", err.Error())
 			}
-			outBytes, err := yaml.Marshal(m)
+
+			err = encoder.Encode(m)
 			if nil != err {
 				Errexit(5, "Failed to convert to yaml: %v", err.Error())
 			}
-			writeBytes(&header)
+			outBytes := outBuf.Bytes()
 			writeBytes(&outBytes)
+			numfile++
 		}
 	}
 	if err != io.EOF {
 		Errexit(3, "Error decoding input stream: %v", err.Error())
 	}
+}
+
+func TransformFile(filePath string) {
+	if config.Conf.Debug {
+		log.Printf("using '%s' as input", filePath)
+	}
+	reader, err := os.Open(filePath)
+	defer reader.Close()
+	if nil != err {
+		Errexit(5, "Failed to open input: %v", err)
+	}
+	Transform(reader)
+}
+
+func TransformFileOrDir(filePath string) {
+	fileInfo, err := os.Stat(filePath)
+	if nil != err {
+		Errexit(5, "Failed to stat input file: %v", err)
+	}
+	if fileInfo.IsDir() {
+		TransformDir(filePath)
+	} else {
+		TransformFile(filePath)
+	}
+}
+
+func TransformDir(filePath string) {
+	if config.Conf.Debug {
+		log.Printf("reading directory '%s'", filePath)
+	}
+	file, err := os.Open(filePath)
+	defer file.Close()
+	if nil != err {
+		Errexit(5, "Failed to open directory: %v", err)
+	}
+	dirEntries, err := file.ReadDir(-1)
+	if nil != err {
+		Errexit(5, "Failed to read directory '%s': %v", filePath, err)
+	}
+	dirLen := len(dirEntries)
+	sort.Slice(dirEntries, func(i, j int) bool {
+		return dirEntries[i].Name() < dirEntries[j].Name()
+	})
+	for idx := 0; idx < dirLen; idx++ {
+		name := dirEntries[idx].Name()
+		entryPath := filePath + string(os.PathSeparator) + name
+		fileInfo, err := os.Stat(entryPath)
+		if nil != err {
+			Errexit(5, "Failed to stat input file: %v", err)
+		}
+		if fileInfo.IsDir() {
+			if config.Conf.Subdirs {
+				TransformDir(entryPath)
+			}
+		} else {
+			if !isFilenameMatch(name) {
+				if config.Conf.Debug {
+					log.Printf("skip not-matched file '%s'", entryPath)
+				}
+				continue
+			}
+			TransformFile(entryPath)
+		}
+	}
+	if config.Conf.Debug {
+		log.Printf("finished directory '%s'", filePath)
+	}
+}
+
+func isFilenameMatch(filename string) bool {
+	if config.Conf.Glob != "" {
+		result, err := filepath.Match(config.Conf.Glob, filename)
+		if nil != err {
+			Errexit(1, "Cannot perform glob matching: %v", err.Error())
+		}
+		return result
+	}
+	if config.FileRegexp != nil {
+		return config.FileRegexp.MatchString(filename)
+	}
+	return true
 }
 
 // return include type and original key
@@ -149,14 +240,14 @@ func resolveAndCheckLinks(path string) string {
 	}
 	// test if not equal to original
 	// (EvalSymLinks calls Clean() before return)
-	if !Conf.Links && resolved != filepath.Clean(path) {
+	if !config.Conf.Links && resolved != filepath.Clean(path) {
 		Errexit(6, "Error: path '%s' contains symlinks", path)
 	}
 	return resolved
 }
 
 func checkAbsPath(path string) {
-	if !Conf.Abs {
+	if !config.Conf.Abs {
 		if filepath.IsAbs(path) {
 			Errexit(6, "Error: absolute file path '%s' is not allowed", path)
 		}
@@ -164,7 +255,7 @@ func checkAbsPath(path string) {
 }
 
 func checkUpDir(path string) {
-	if !Conf.Updir {
+	if !config.Conf.Updir {
 		platformPath := filepath.FromSlash(path)
 		parts := strings.Split(platformPath, string(os.PathSeparator))
 		for _, v := range parts {

@@ -5,4 +5,4 @@ resources:
   - example.yaml
   
 transformers:
-  - include-plugin.yaml
+  - plugin-config.yaml

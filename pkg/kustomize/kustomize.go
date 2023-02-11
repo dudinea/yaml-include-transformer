@@ -12,13 +12,32 @@ import (
 )
 
 func getPluginDir() (string, error) {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		return "", fmt.Errorf("Failed to get user's home directory: %v", err)
+	if config.Conf.Legacy {
+		return getPluginDirLegacy()
+	} else if config.Conf.Exec {
+		return getPluginDirKrm()
+	} else {
+		return "", fmt.Errorf("There is no need to install the binary when using a containerized KRM plugin.")
 	}
-	return filepath.FromSlash(homeDir +
-		"/.config/kustomize/plugin/" + config.ApiVersion + "/" +
-		strings.ToLower(config.Progname)), nil
+}
+
+func getPluginDirLegacy() (string, error) {
+	configDir := os.Getenv("XDG_CONFIG_HOME")
+	if configDir == "" {
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return "", fmt.Errorf("Failed to get user's home directory: %v", err)
+		}
+		configDir = filepath.FromSlash(homeDir + "/.config")
+	}
+
+	return configDir + "/kustomize/plugin/" +
+		config.ApiVersion + "/" +
+		strings.ToLower(config.Progname), nil
+}
+
+func getPluginDirKrm() (string, error) {
+	return filepath.FromSlash("plugins/"), nil
 }
 
 func PluginInstall() error {
@@ -83,12 +102,30 @@ func copyfile(src string, dst string) error {
 }
 
 func PluginConf() {
-	fmt.Printf("---\n"+
-		"# put this into a file in your kustomize directory\n"+
-		"# and add filename to the list of transformers in\n"+
-		"# the kustomize.yaml\n"+
-		"apiVersion: %s\n"+
-		"kind: %s\n"+
-		"metadata:\n"+
-		"  name: notImportantHere\n", config.ApiVersion, config.Progname)
+	fmt.Printf(`---
+# put this into a file in your kustomize directory
+# and add filename to the list of transformers in
+# the kustomization.yaml
+apiVersion: %s
+kind: %s
+metadata:
+  name: notImportantHere
+`,
+		config.ApiVersion, config.Progname)
+	// FIXME: ugly - go templates? deserialize?
+	if config.Conf.Krm {
+		fmt.Printf("  annotations:\n")
+		if config.Conf.Exec {
+			fmt.Printf(`    config.kubernetes.io/function: |
+      exec:
+        path: ./plugins/%s
+`, config.Progname)
+		} else {
+			fmt.Printf(`    config.kubernetes.io/function: |
+      container:
+        image: %s
+`, config.Conf.Dockertag)
+		}
+
+	}
 }

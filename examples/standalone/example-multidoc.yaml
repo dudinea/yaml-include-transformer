@@ -1,0 +1,18 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: demo-multi-cm
+  labels!jsonfile: labels.json
+  annotations!yamlfile: annotations.yaml
+data:
+  language: lua
+  code!textfile:  source.lua
+  data!base64file: data.bin
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: demo-multi-secret
+data:
+  foo!base64file: data.bin

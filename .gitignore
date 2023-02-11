@@ -1,7 +1,8 @@
 yaml-include-transformer
+YamlIncludeTransformer
 *~
 \#*\#
 junk/
 Dockerfile.argocd
-examples/example.out
+*.test
 
