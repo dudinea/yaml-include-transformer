@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: demo-cm
+  name: demo-subdir-cm
   labels!jsonfile: labels.json
   annotations!yamlfile: annotations.yaml
 data:
