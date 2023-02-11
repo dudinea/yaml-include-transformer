@@ -63,8 +63,12 @@ argo_patch_legacy_exec:
 argo_patch_krm_exec:
 	kubectl patch cm -n $(ARGOCD_NS) argocd-cm -p '{"data" : {"kustomize.buildOptions" : "--enable-alpha-plugins --enable-exec"}}'
 
+argo_patch_cmp_cm:
+	kubectl patch cm -n $(ARGOCD_NS) argocd-cm -p '{"data" : {"configManagementPlugins": "[ { \"name\":  \"YamlIncludeTransformer\", \"generate\": { \"command\" : [ \"/usr/local/bin/yaml-include-transformer\" ],  \"args\": [ \"-f\" , \".\" ]}}]"}}'
 
-.PHONY: argo_patch_legacy_exec argo_docker_push argo_docker_build test_install argo_patch_krm_exec\
+
+.PHONY: argo_patch_legacy_exec argo_docker_push argo_docker_build \
+	argo_patch_krm_exec argo_patch_cmp_cm \
 	kustomize_tests test_standalone tests \
 	test_legacy_exec test_krm_containerized test_krm_exec \
 	clean build_docker push_docker install install_plugin 
