@@ -1,6 +1,8 @@
 YAML Include Transformer
 ========================
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/dudinea/yaml-include-transformer.svg)](https://pkg.go.dev/github.com/dudinea/yaml-include-transformer)
+
 A simple YAML processor that implements include directives for YAML
 files. It can be used as a standalone utility as well as a plugin for
 [Kustomize](https://kustomize.io) or [ArgoCD](https://argoproj.github.io).
